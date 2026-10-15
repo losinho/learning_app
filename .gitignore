@@ -1,0 +1,15 @@
+# Dependencies & builds (e.g. if packaging with Capacitor)
+node_modules/
+android/
+ios/
+dist/
+
+# Local editor / tool settings
+.claude/settings.local.json
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

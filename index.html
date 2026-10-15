@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <!-- The Google TTS fallback (src/audio/speech.js) rejects requests that carry a Referer header -->
+  <meta name="referrer" content="no-referrer">
+  <title>לומדים בכיף | אפליקציית למידה לילדים</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Rubik', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- App Custom Stylesheet -->
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body class="flex flex-col min-h-screen">
+  
+  <!-- Top App Header Mount -->
+  <div id="header-mount"></div>
+
+  <!-- Subject Switcher Tabs Mount -->
+  <div id="nav-mount"></div>
+
+  <!-- Main Active Exercise Viewport Mount -->
+  <main id="exercise-mount" class="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-4 py-3 sm:py-6"></main>
+
+  <!-- Modals & Overlays Mount (Profiles, Celebrations) -->
+  <div id="modal-mount"></div>
+
+  <!-- App Entry Module -->
+  <script type="module" src="./src/app.js"></script>
+
+  <!-- Offline Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

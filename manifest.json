@@ -1,0 +1,24 @@
+{
+  "name": "לומדים בכיף - אפליקציית לימוד לילדים",
+  "short_name": "לומדים בכיף",
+  "description": "תרגילי עברית, חשבון ואנגלית מותאמים לגיל ולתוכנית משרד החינוך",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./public/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./public/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

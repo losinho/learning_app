@@ -1,0 +1,133 @@
+/* Kid-friendly, playful styling with smooth tactile animations */
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;800;900&family=Fredoka:wght@500;600;700&display=swap');
+
+:root {
+  --primary-font: 'Rubik', sans-serif;
+  --fun-font: 'Fredoka', cursive, sans-serif;
+  --color-hebrew: #ff7849;
+  --color-math: #2563eb;
+  --color-english: #10b981;
+  --color-gold: #f59e0b;
+}
+
+body {
+  font-family: var(--primary-font);
+  background-color: #f0fdf4;
+  background-image: radial-gradient(#dcfce7 2px, transparent 2px), radial-gradient(#dcfce7 2px, #f0fdf4 2px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+  min-height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tactile 3D Button Shadows (Kids love pressing them) */
+.btn-tactile {
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.18);
+}
+
+.btn-tactile:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+}
+
+.card-tactile {
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+/* Bounce & wiggle animations */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.85); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.animate-pop {
+  animation: pop-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s infinite ease-in-out;
+}
+
+/* Hebrew vocalization typography */
+.vocalized-text {
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  color: #1e293b;
+}
+
+/* Touch-optimized option cards */
+.choice-pill {
+  border: 3px solid #e2e8f0;
+  border-radius: 1.25rem;
+  background: white;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.choice-pill:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-2px);
+}
+
+.choice-pill.selected-correct {
+  border-color: #22c55e !important;
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  animation: pop-in 0.3s ease;
+}
+
+.choice-pill.selected-wrong {
+  border-color: #ef4444 !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  animation: shake 0.35s ease;
+}
+
+/* Reading comprehension passage scrollable box */
+.passage-box {
+  background: #fffbeb;
+  border: 2px dashed #fcd34d;
+  border-radius: 1.25rem;
+  font-size: 1.2rem;
+  line-height: 2.1;
+  color: #451a03;
+}
+
+/* On-screen numeric keypad */
+.keypad-btn {
+  font-family: var(--fun-font);
+  font-size: 1.8rem;
+  font-weight: 700;
+  border-radius: 1rem;
+  background: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 4px 0 #94a3b8;
+}
+
+.keypad-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #94a3b8;
+}
