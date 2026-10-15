@@ -59,16 +59,25 @@ An offline-first, installable web app (PWA) for Israeli children to practice **H
 | Hebrew | הברות | `image_word_match` | generated | Picture + word (spoken) → choose how many claps: 3 consecutive choices with 👏 icons. Feedback shows the split (בַּ – לּוֹן). 38 bank words have a syllable split; words with an ambiguous count (initial shva, patah genuva) are left out. |
 | Hebrew | חרוזים | `image_word_match` | generated | "Which word rhymes with X?" — 3 labelled pictures; the answer comes from the same rhyme family, distractors from other families (8 families). |
 | Hebrew | שמות האותיות | `image_word_match` | generated | "Where is the letter גִּימֶל?" — 3 big letters, one a look-alike when there is one (ב/כ/פ, ד/ר/ה, ו/ז/י, ס/ט/מ, ע/צ, ג/נ). 22 letters, no final forms. |
+| Hebrew | יחיד ורבים | `image_word_match` | generated | Hear a word in singular or plural (כֶּלֶב / כְּלָבִים) → pick one item or many (🐶 vs 🐶🐶🐶); the trap is the same item in the other number. 29 plurals incl. irregular (בָּתִּים, נֵרוֹת, דְּבוֹרִים). |
+| Hebrew | צליל סוגר | `image_word_match` | generated | "Which picture ends with the letter ל?" — final forms count as their base letter (ן = נ); words ending in a vowel sound (ה, ו, א, ע, י) are never the target; wrong options never end with the same sound (incl. כ/ח, ב/ו at the end). |
 | Math | השוואת כמויות | `comparison_drill` | generated | Two groups of 1–9 items, choose `<`, `>` or `=` (25% equal). No numbers on the picture (the child counts); the counts are shown in the feedback after answering. |
 | Math | סופרים ומחברים | `visual_addition` | generated | Two groups (1–5 + 1–4), choose the total (max 9). No numbers on the picture; the equation is shown in the feedback. |
 | Math | חיבור או חיסור? | `operator_choice` | generated | Picture equation, choose `+` or `−` (results within 0–9). No numbers on the picture; the equation is shown in the feedback. |
-| Math | סופרים ומזהים | `visual_counting` | generated | Count 1–8 items, choose the number. |
+| Math | סופרים ומזהים | `visual_counting` | generated | Count 1–20 items (half the questions up to 10), shown in rows of 5; choose the number. |
+| Math | כמה נשארו? | `visual_subtraction` | generated | 3–10 items, some crossed out with ✕ ("they went away"); choose how many are left. The equation is shown in the feedback. |
+| Math | מספרים סודרים | `ordinal_line` | generated | 6 different animals in a line behind a 🏁 (front of the line on the right); "who is third?" — tap the animal. Ordinals רִאשׁוֹן to שִׁשִּׁי. |
+| Math | מיקום במרחב | `image_word_match` | generated | "In which picture is the cat above the box?" — 3 scenes (above / below / beside / inside), built from two emojis placed with CSS (`src/engine/spatial.js`). No right/left. |
 | Math | צורות | `image_word_match` | generated | "Where is the triangle?" — 3 SVG shapes (circle, ellipse, half circle, triangle, square, rectangle, pentagon, hexagon) in random colour, size and rotation (`src/engine/shapes.js`). Square and rectangle never appear together. |
-| Math | גופים | `image_word_match` | generated | "Which object looks like a cube?" — 3 everyday objects (sphere, cube, box, cylinder). |
-| English | Colors, Fruits, Vegetables, Animals, Food, My Body, Clothes, Toys & Home, Transport, Nature & Weather, Shapes, Numbers | `image_word_match` | generated | English word shown + spoken → pick 1 of 3 pictures **from the same topic**. 12 topics / 127 words. Feedback shows the Hebrew meaning (e.g. `BANANA = בננה`). |
+| Math | גופים | `image_word_match` | generated | Two styles: "Which object looks like a cube?" (everyday objects: sphere, cube, box, cylinder) and "Where is the pyramid?" (drawn 3D solids: cube, box, cylinder, cone, pyramid, prism, sphere). Cube and box never appear together. |
+| Math | מטבעות | `image_word_match` | generated | "Where is the 5-shekel coin?" — 3 coin pictures (10 agorot, ½, 1, 2, 5, 10 ₪) from `public/coins/`. A look-alike is included when there is one (10 agorot ↔ 10 ₪, ½ ↔ 1 ₪). |
+| Math | קונים בחנות | `image_word_match` | generated | "The lollipop costs 2 ₪ — which coin pays?" — exact price with one whole-shekel coin (1, 2, 5, 10). |
+| English | Colors, Fruits, Vegetables, Animals, Food, My Body, Clothes, Toys & Home, Transport, Nature & Weather, Shapes, Numbers, Actions, Feelings, Greetings | `image_word_match` | generated | English word shown + spoken → pick 1 of 3 pictures **from the same topic**. 15 topics / 153 words. Feedback shows the Hebrew meaning (e.g. `BANANA = בננה`). |
 | English | Alphabet Letters (אותיות ABC) | `image_word_match` | generated | Uppercase → choose lowercase; distractors prefer confusable letters (b/d/p/q, m/n…). |
 
-Round composition: Hebrew cycles word-picture → initial sound → syllables → rhyme → letter names (each twice); Math cycles comparison → addition → operator → counting → shapes/solids (each twice); English mixes topics (no topic repeats until all are used, no word repeats in a round) with a letter question at positions 5 and 10. `getEnglishAge5Exercises(count, topicKey)` also supports a single-topic round (not yet exposed in the UI).
+Round composition (20 questions, `ROUND_SIZE` in `src/data/index.js`; the same question never appears twice in a round): Hebrew cycles word-picture → initial sound → syllables → rhyme → letter names → plural → final sound (about 3 each); Math cycles comparison → addition → operator → counting → subtraction → ordinal → spatial → shapes/solids → coins (2–3 each; the shapes slot rotates flat shapes / drawn solids / object solids, the coins slot rotates recognise / buy, each starting at a random point); English mixes topics (no topic repeats until all are used, no word repeats in a round) with a letter question every 5th position.
+
+**English topic picker (age 5):** a row of topic buttons above the English exercise — "הכל" (mixed), "אותיות" (letters only, no letter repeats) or one of the 15 topics (goes through all its words before repeating) — and a "רק להקשיב" toggle (listen-only: the word is hidden and spoken automatically, then revealed in the feedback). The choice is saved per child (`englishTopic`, `englishListenOnly` on the profile); changing it starts a new round. Component: `src/components/englishTopicPicker.js`.
 
 ### 3.2 Age 8–9 — כיתות ג׳–ד׳
 
@@ -82,7 +91,7 @@ Round composition: Hebrew cycles word-picture → initial sound → syllables �
 | Math | Word problems, money, fractions (½ ¼ ⅓) | `numeric_input`, `image_word_match` | curated | 5 fixed items. |
 | English | Sentence completion, have/has, is/are/am, Odd One Out, Opposites, Q&A | `fill_in_blank`, `image_word_match` | curated | 13 fixed items. |
 
-Round composition: Hebrew – 10 random from reading questions + grammar; Math – fixed sequence of 9 (generated + curated); English – 10 random from 13.
+Round composition: Hebrew – all 17 items (12 reading questions + 5 grammar) in random order; Math – 20: the 5 curated items spread between 15 generated drills (multiplication, missing factor, division) with no repeated formula; English – all 13 items in random order. The fixed Hebrew and English lists are shorter than `ROUND_SIZE`, so their rounds are shorter until more content is added.
 
 ---
 
@@ -189,12 +198,12 @@ What the program expects around the end of gan:
 |---|---|
 | Initial sound linked to a letter (צליל פותח) | ✅ "צליל פותח" (distractors never share the target's first sound, incl. כּ/ק and א/ע) |
 | Syllable segmentation (הברות) | ✅ "הברות" (clap count, 1–4) |
-| Sub-syllable units / final sound | ❌ |
+| Sub-syllable units / final sound | 🟡 Final sound ✅ "צליל סוגר"; splitting into sub-syllable units (פִּי–ל) not built |
 | Rhyme (חריזה) | ✅ "חרוזים" |
 | Letter names and shapes | ✅ "שמות האותיות" (hear the name → find the letter) |
 | Reading vocalized words | 🟡 Above gan level (full decoding is a grade-1 goal). Fine as enrichment because the 🔊 button speaks the word. |
 | Vocabulary (word ↔ picture) | ✅ "מילים ותמונות" (45 words) |
-| Morphology (e.g. singular/plural: כלב–כלבים) | ❌ |
+| Morphology (e.g. singular/plural: כלב–כלבים) | ✅ "יחיד ורבים" |
 
 #### Math (preschool math program; end-of-gan-chova goals)
 - **Number concept**: count from 1 to **30** (extension: beyond 30, by 10s to 100, by 2s and 5s); count backwards from **10**; count objects up to **20**; one-to-one correspondence; compare groups by counting; ordinal numbers up to **sixth (שישי/שישית)**; estimate a quantity; recognise and represent numerals **0–10** (extension: 20); split and join concrete quantities up to 10; **add and subtract up to 10 in concrete situations** (extension: larger numbers); share up to 10 objects equally.
@@ -204,14 +213,15 @@ What the program expects around the end of gan:
 
 | Expectation | App status |
 |---|---|
-| Counting objects (app: 1–8) | 🟡 The goal is counting objects up to 20 and reciting to 30 |
+| Counting objects | ✅ 1–20 in rows of 5 (reciting to 30 is oral, not covered) |
 | Comparing groups | ✅ Covered with `< > =` symbols (above gan level; kept by product decision §8.4) |
-| Add/subtract within 10 with objects | ✅ Visual addition (max 9); operator choice. Visual subtraction ("how many are left") is missing. |
+| Add/subtract within 10 with objects | ✅ Visual addition (max 9), "כמה נשארו?" subtraction, operator choice |
 | Numeral recognition 0–10 | 🟡 Implicit only (numbers appear as answers) |
-| Ordinal numbers to "sixth" | ❌ |
-| Shapes & solids | ✅ "צורות" (8 shapes, varied colour/size/orientation) and "גופים" (4 solids as objects). Not yet: cone, pyramid, prism. |
-| Spatial language | ❌ |
-| Measurement comparison, coins, clock | ❌ |
+| Ordinal numbers to "sixth" | ✅ "מספרים סודרים" |
+| Shapes & solids | ✅ "צורות" (8 shapes, varied colour/size/orientation) and "גופים" (7 solids: drawn, plus everyday objects) |
+| Spatial language | ✅ "מיקום במרחב" (above / below / beside / inside; no right/left) |
+| Coins and buying | ✅ "מטבעות" (recognise a coin by its name) and "קונים בחנות" (pay an exact price with one coin) |
+| Measurement comparison, clock | ❌ |
 | Sorting / patterns | ❌ |
 
 #### English (enrichment — no gan curriculum)
@@ -219,7 +229,7 @@ The closest official reference is the first level of the English Curriculum 2020
 - "Can demonstrate understanding of a word by matching it to a picture" ✅
 - "Can recognize a range of basic everyday nouns and adjectives (e.g. colors, numbers, classroom objects)" ✅ (12 topics, 127 words)
 - "Can recognize the letters of the alphabet in upper and lower case" ✅ (letter matching)
-- Basic action words (clap, jump, walk), greetings (hello, bye), polite words (please, thank you), feelings (happy, sad) ❌. These are good candidates for new age-5 topics.
+- Basic action words, greetings and polite words, feelings ✅ (topics Actions, Greetings, Feelings).
 
 Because there is no gan curriculum for English, the right approach is listening and pictures, with no reading or writing demands. The app already works this way: the word is spoken and the answer is a picture.
 
@@ -274,11 +284,13 @@ Because there is no gan curriculum for English, the right approach is listening 
 | Vocabulary taken from the official Pre Band I / Band I lists | ❌ Not checked against the Excel lists yet |
 
 ### 8.4 Product decisions
+- **Rounds are 20 questions (2026-10-15)** for every subject and age, without repeating a question inside a round.
+- **Coins (2026-10-15):** first dropped, then added once real coin pictures were supplied (`public/coins/`, cut from `coins.jpg`).
 - **Age 5 keeps its current difficulty (2026-10-15):** reading niqqud words and the `< > =` symbols stay, even though both are above the gan program. New age-5 content adds missing skills; it does not make existing exercises easier.
 
 ### 8.5 Main conclusions
-1. **Age 5 Hebrew** now covers the core gan skills: initial sound, **syllables, rhyme and letter names**, plus vocabulary. Still missing: sub-syllable units and morphology. Reading niqqud words is above gan level (kept on purpose).
-2. **Age 5 math** covers counting, adding and now **shapes and solids**. It still has nothing on **ordinal numbers, spatial language, measurement or money**. The `< > =` symbols are above gan level but kept on purpose.
+1. **Age 5 Hebrew** covers the core gan skills: initial and final sound, **syllables, rhyme, letter names, singular/plural**, plus vocabulary. Not built: splitting words into sub-syllable units. Reading niqqud words is above gan level (kept on purpose).
+2. **Age 5 math** covers counting to 20, adding and subtracting, ordinal numbers, spatial words, **shapes, solids and coins**. Not built: measurement (length/weight comparison), the clock, sorting/patterns. The `< > =` symbols are above gan level but kept on purpose.
 3. **Age 5 English** is enrichment. The new vocabulary module matches the official Pre-A1 can-dos (word–picture matching, colours, numbers, letters).
 4. **Age 8–9** covers only a small part of each grade 3–4 program. The biggest gaps are division with remainder, place value, geometry and measurement in math; grammar (gender, number, סמיכות) in Hebrew; and an official word list in English.
 5. The app has one group "8–9" for both grade 3 and grade 4. The official programs differ a lot between these grades (for example, fractions and numbers up to a million are grade 4). Consider splitting it into "grade 3" and "grade 4".
@@ -295,19 +307,34 @@ Because there is no gan curriculum for English, the right approach is listening 
 
 ## 9. Backlog (derived from §8)
 
-**Fixed (2026-10-15)**
-- ~~`צליל פותח` could show a distractor that starts with the same sound as the target (כֶּלֶב with קוֹף, אַרְנָב with עֵץ).~~ Distractors now also exclude same-sound letter groups (כּ/ק, א/ע, ת/ט, ס/שׂ) — `SAME_SOUND_GROUPS` in `src/data/age5/hebrew.js`.
+### 9.1 Open
 
-**Age 5**
-1. Hebrew: singular/plural with pictures; sub-syllable units (פִּי–ל). ~~Syllables, rhyme, letter names~~ (done 2026-10-15). Check on a real device that TTS reads "איפה האות ג?" as the letter name.
-2. Math: ordinal numbers ("who is third in line?"); cone/pyramid/prism; spatial words; ~~shapes and solids~~ (done 2026-10-15); coins; counting objects up to 20; visual subtraction.
-3. English: topic picker (the generator already supports it); new topics for actions, greetings and feelings; a "listen only" mode.
+**Age 5 (all planned items are done; possible additions)**
+- Splitting words into sub-syllable units (פִּי–ל).
+- Measurement comparison (longer/heavier), the clock, sorting and patterns.
+- Right/left (left out on purpose for now).
 
 **Age 8–9**
-4. Math: division with remainder, place value, order of operations, more two-step problems, fractions (numerator and denominator, equivalents), angles, shapes, area and perimeter, units.
-5. Hebrew: singular/plural/dual, gender and number agreement, number words (שלושה / שלוש), סמיכות, main-idea questions, a short poem with comprehension questions.
-6. English: check the word lists against the official Pre Band I / Band I Excel; add alphabet and phonics for grade 3.
-7. Split the "8–9" group into grade 3 and grade 4; add grades 1–2.
+1. Content to reach 20-question rounds: Hebrew has 17 items and English 13, so their rounds are shorter than `ROUND_SIZE`.
+2. Math: division with remainder, place value, order of operations, more two-step problems, fractions (numerator and denominator, equivalents), angles, shapes, area and perimeter, units.
+3. Hebrew: singular/plural/dual, gender and number agreement, number words (שלושה / שלוש), סמיכות, main-idea questions, a short poem with comprehension questions.
+4. English: check the word lists against the official Pre Band I / Band I Excel; add alphabet and phonics for grade 3.
+5. Split the "8–9" group into grade 3 and grade 4; add grades 1–2.
 
 **Platform**
-8. Parent PIN, data export/backup, stable ids for generated exercises, cache Tailwind locally for true offline use.
+6. Parent PIN; data export/backup; stable ids for generated exercises; cache Tailwind locally for true offline use.
+7. Reduce dependence on the unofficial Google TTS fallback (e.g. pre-recorded audio for fixed words).
+
+**To check on real devices**
+- TTS reads "איפה האות ג?" as the letter name.
+- The README steps for installing a Hebrew voice (Android, Chrome on Windows).
+
+### 9.2 Done (2026-10-15)
+- English age 5: 12 vocabulary topics (127 words), letter matching, Hebrew meaning in the feedback.
+- Hebrew age 5: syllables, rhyme, letter names; initial-sound wrong options never share the target's first sound (`SAME_SOUND_GROUPS`).
+- Math age 5: flat shapes and solids; coins (recognise + buy, pictures in `public/coins/`); no numbers on the comparison, addition and +/− pictures — the counts are shown in the feedback.
+- All rounds are 20 questions without repeats (`ROUND_SIZE`).
+- Hebrew read-aloud fixed (no-referrer for the Google fallback) and long passages read in full (chunked).
+- Service worker re-caches with `cache: 'reload'`, so updates reach installed devices.
+- Age 5 completed: singular/plural, final sound, counting to 20 in rows of 5, subtraction, ordinal numbers, spatial words, drawn solids (cone, pyramid, prism…), English topics Actions/Feelings/Greetings, English topic picker and listen-only mode.
+- Product decisions recorded in §8.4 (age 5 keeps its difficulty, 20-question rounds, coins).

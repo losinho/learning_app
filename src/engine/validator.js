@@ -16,6 +16,8 @@ export function validateAnswer(exercise, submission) {
     case 'letter_match':
     case 'word_picture_match':
     case 'visual_counting':
+    case 'visual_subtraction':
+    case 'ordinal_line':
     case 'visual_addition':
     case 'arithmetic_choice': {
       // submission is option id

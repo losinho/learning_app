@@ -76,7 +76,8 @@ export function generateAge5OperatorChoice() {
 
 export function generateAge5VisualCounting() {
   const emoji = pickRandom(KID_EMOJIS);
-  const count = randInt(1, 8);
+  // Gan goal: count objects up to 20. Half the questions stay within 10 so small amounts keep coming up.
+  const count = Math.random() < 0.5 ? randInt(1, 10) : randInt(11, 20);
 
   // Generate 3 unique choices including the correct count
   const choices = [count];
@@ -103,6 +104,67 @@ export function generateAge5VisualCounting() {
       id: String(c),
       label: String(c)
     }))
+  };
+}
+
+// "How many are left?" — some items are crossed out (they went away); count the rest
+export function generateAge5VisualSubtraction() {
+  const emoji = pickRandom(KID_EMOJIS);
+  const total = randInt(3, 10);
+  const takeAway = randInt(1, total - 1);
+  const left = total - takeAway;
+
+  const choices = [left];
+  while (choices.length < 3) {
+    const fake = Math.max(1, left + randInt(-2, 2));
+    if (!choices.includes(fake)) {
+      choices.push(fake);
+    }
+  }
+  choices.sort(() => Math.random() - 0.5);
+
+  return {
+    id: 'math_proc_sub_' + Date.now() + '_' + Math.random(),
+    ageGroup: '5',
+    category: 'math',
+    type: 'visual_subtraction',
+    title: 'כמה נשארו?',
+    instructionHebrew: `כמה ${emoji} נשארו? אלה עם ✕ כבר הלכו.`,
+    emoji: emoji,
+    total: total,
+    takeAway: takeAway,
+    expectedAnswer: left,
+    correctOptionId: String(left),
+    // Revealed after answering, laid out like the picture (RTL)
+    feedbackNote: `<span dir="rtl">${total} - ${takeAway} = ${left}</span>`,
+    options: choices.map(c => ({
+      id: String(c),
+      label: String(c)
+    }))
+  };
+}
+
+const ORDINALS = ['רִאשׁוֹן', 'שֵׁנִי', 'שְׁלִישִׁי', 'רְבִיעִי', 'חֲמִישִׁי', 'שִׁשִּׁי'];
+const ORDINAL_SPOKEN = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
+const LINE_ANIMALS = ['🐶', '🐱', '🐰', '🐻', '🐵', '🐸', '🐷', '🦁', '🐮', '🐔', '🐭', '🐢'];
+
+// Ordinal numbers to "sixth": 6 different animals stand in line behind a flag — who is third?
+export function generateAge5Ordinal() {
+  const animals = [...LINE_ANIMALS].sort(() => Math.random() - 0.5).slice(0, 6);
+  const position = randInt(0, 5);
+
+  return {
+    id: `math_5_ordinal_${position + 1}`,
+    ageGroup: '5',
+    category: 'math',
+    type: 'ordinal_line',
+    title: 'מספרים סודרים',
+    instructionHebrew: `הדגל מסמן את תחילת התור. מי ה${ORDINAL_SPOKEN[position]} בתור?`,
+    targetWordVocalized: ORDINALS[position],
+    soundCue: `מי ה${ORDINAL_SPOKEN[position]} בתור?`,
+    correctOptionId: String(position),
+    feedbackNote: `${animals[position]} = ${ORDINALS[position]}`,
+    options: animals.map((emoji, idx) => ({ id: String(idx), emoji }))
   };
 }
 

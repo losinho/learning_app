@@ -331,6 +331,24 @@ function getPedagogicalTip(topic) {
   if (topic.includes('שמות האותיות')) {
     return 'מומלץ להצביע על אותיות בשלטים ובספרים ולשאול "איך קוראים לאות הזאת?", החל מהאותיות שבשם של הילד.';
   }
+  if (topic.includes('יחיד ורבים')) {
+    return 'מומלץ לשאול בטבעיות "יש פה כלב אחד או הרבה כלבים?" ולשים לב יחד לצורות מיוחדות כמו בית–בתים.';
+  }
+  if (topic.includes('צליל סוגר')) {
+    return 'מומלץ לשחק "במה נגמרת המילה?" — להגיד מילה לאט ולהדגיש את הצליל האחרון (חתוּל — ל).';
+  }
+  if (topic.includes('כמה נשארו')) {
+    return 'מומלץ להמחיש חיסור עם חפצים אמיתיים: "היו 5 תפוחים, אכלנו 2 — כמה נשארו?"';
+  }
+  if (topic.includes('מספרים סודרים')) {
+    return 'מומלץ לעמוד בתור במשחק ולשאול "מי ראשון? מי שלישי?", וגם לסדר צעצועים בשורה.';
+  }
+  if (topic.includes('מיקום במרחב')) {
+    return 'מומלץ לשחק "שים את הדובי מעל / מתחת / ליד / בתוך הקופסה" ולתאר יחד איפה דברים נמצאים.';
+  }
+  if (topic === 'מטבעות' || topic === 'קונים בחנות') {
+    return 'מומלץ לתת לילד לשחק בחנות עם מטבעות אמיתיים ולשלם בעצמו בקנייה קטנה; לשים לב במיוחד ל-10 אגורות מול 10 שקלים.';
+  }
   if (topic === 'צורות' || topic === 'גופים') {
     return 'מומלץ לחפש צורות וגופים בבית ובטיול (חלון = מלבן, פחית = גליל), גם כשהם מסובבים או בצבעים שונים.';
   }
@@ -346,7 +364,7 @@ function getPedagogicalTip(topic) {
   if (topic.includes('שברים')) {
     return 'מומלץ לחלק פיצה או עוגה לחלקים שווים כדי להמחיש את מושג השבר (חצי, רבע).';
   }
-  if (/Colors|Fruits|Vegetables|Animals|Food|Body|Clothes|Toys|Transport|Nature|Shapes|Numbers/.test(topic)) {
+  if (/Colors|Fruits|Vegetables|Animals|Food|Body|Clothes|Toys|Transport|Nature|Shapes|Numbers|Actions|Feelings|Greetings/.test(topic)) {
     return 'מומלץ לשחק "איך אומרים באנגלית?" עם חפצים בבית, במטבח ובטיול, ולשיר שירי ילדים באנגלית על צבעים, חיות ופירות.';
   }
   if (topic.includes('הבנת הנקרא')) {

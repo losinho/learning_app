@@ -70,16 +70,28 @@ export const mathAge8_9CuratedExercises = [
   }
 ];
 
-export function getMathAge8Exercises() {
-  return [
-    generateAge8Multiplication(),
-    mathAge8_9CuratedExercises[0], // Word problem (24 / 4)
-    generateAge8MissingFactor(),
-    mathAge8_9CuratedExercises[1], // Two-step word problem
-    generateAge8Division(),
-    mathAge8_9CuratedExercises[2], // Fractions 1/4
-    mathAge8_9CuratedExercises[3], // Compare fractions
-    mathAge8_9CuratedExercises[4], // Financial word problem
-    generateAge8Multiplication()
-  ];
+// A round mixes all 5 curated items (word problems, fractions) with generated drills
+// (multiplication, missing factor, division, in rotation). No formula repeats within a round.
+export function getMathAge8Exercises(count = 20) {
+  const drills = [generateAge8Multiplication, generateAge8MissingFactor, generateAge8Division];
+  const curated = mathAge8_9CuratedExercises.slice(0, count);
+  const drillCount = count - curated.length;
+
+  const usedFormulas = new Set();
+  const generated = [];
+  for (let i = 0; i < drillCount; i++) {
+    const generate = drills[i % drills.length];
+    let ex = generate();
+    for (let tries = 0; tries < 30 && usedFormulas.has(ex.formula); tries++) ex = generate();
+    usedFormulas.add(ex.formula);
+    generated.push(ex);
+  }
+
+  // Spread the curated items evenly between the drills
+  const round = [...generated];
+  curated.forEach((item, idx) => {
+    const position = Math.round(((idx + 1) * round.length) / (curated.length + 1)) + idx;
+    round.splice(position, 0, item);
+  });
+  return round;
 }

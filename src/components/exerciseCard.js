@@ -41,11 +41,26 @@ export function renderExerciseCard(container, exercise, onComplete) {
       break;
 
     case 'visual_counting':
+    case 'visual_subtraction': {
+      // Items are laid out in rows of 5 so larger amounts (up to 20) stay countable.
+      // For subtraction, the last `takeAway` items are crossed out ("they went away").
+      const total = exercise.type === 'visual_counting' ? exercise.count : exercise.total;
+      const crossedFrom = exercise.type === 'visual_subtraction' ? total - exercise.takeAway : total;
+      const sizeClass = total > 10 ? 'text-4xl sm:text-5xl' : 'text-5xl sm:text-6xl';
+      const item = (i) => i < crossedFrom
+        ? `<span class="${sizeClass} filter drop-shadow">${exercise.emoji}</span>`
+        : `<span class="${sizeClass} relative inline-block"><span class="opacity-35">${exercise.emoji}</span><span class="absolute inset-0 flex items-center justify-center text-red-600 font-black" style="font-size:1.1em">✕</span></span>`;
+      const rows = [];
+      for (let start = 0; start < total; start += 5) {
+        const row = [];
+        for (let i = start; i < Math.min(start + 5, total); i++) row.push(item(i));
+        rows.push(`<div class="flex justify-center gap-2">${row.join('')}</div>`);
+      }
       exerciseBodyHtml = `
         <div class="flex flex-col items-center gap-6 my-4">
           <!-- Visual items counting box -->
-          <div class="bg-amber-50 border-4 border-amber-200 p-6 sm:p-8 rounded-3xl flex flex-wrap items-center justify-center gap-2 max-w-md shadow-sm">
-            ${Array(exercise.count).fill(`<span class="text-5xl sm:text-6xl filter drop-shadow hover:scale-110 transition-transform">${exercise.emoji}</span>`).join('')}
+          <div class="bg-amber-50 border-4 border-amber-200 p-5 sm:p-7 rounded-3xl flex flex-col items-center gap-2 max-w-md shadow-sm">
+            ${rows.join('')}
           </div>
 
           <!-- Numbers Options Grid -->
@@ -55,6 +70,32 @@ export function renderExerciseCard(container, exercise, onComplete) {
                 data-id="${opt.id}" 
                 class="option-card choice-pill btn-tactile py-5 px-4 text-center border-3 font-black text-4xl sm:text-5xl text-slate-800 cursor-pointer">
                 ${opt.label}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      break;
+    }
+
+    case 'ordinal_line':
+      // A queue: the 🏁 marks the front of the line. The card is RTL, so the flag is on the right and
+      // the first animal stands next to it, matching how Hebrew readers expect "first" to be placed.
+      exerciseBodyHtml = `
+        <div class="flex flex-col items-center gap-6 my-4">
+          <div class="flex items-center gap-4 bg-amber-50 border-4 border-amber-300 px-8 py-4 rounded-3xl shadow-sm">
+            <span class="vocalized-text text-amber-950 font-black tracking-wide">${exercise.targetWordVocalized}</span>
+            <button id="btn-speak-word" class="p-3 bg-white hover:bg-amber-100 active:scale-95 border-2 border-amber-200 rounded-2xl shadow-sm text-2xl transition-all cursor-pointer" title="האזנה">
+              🔊
+            </button>
+          </div>
+          <div class="flex items-end justify-center gap-1 sm:gap-2 w-full">
+            <span class="shrink-0 text-3xl sm:text-4xl pb-2" aria-hidden="true">🏁</span>
+            ${exercise.options.map(opt => `
+              <button
+                data-id="${opt.id}"
+                class="option-card choice-pill btn-tactile flex-1 min-w-0 py-3 sm:py-4 flex items-center justify-center border-3 cursor-pointer">
+                <span class="text-3xl sm:text-5xl">${opt.emoji}</span>
               </button>
             `).join('')}
           </div>
@@ -372,6 +413,16 @@ export function renderExerciseCard(container, exercise, onComplete) {
     });
   }
 
+  // Listen-only questions hide the word, so it is spoken as soon as the card appears
+  if (exercise.autoSpeak && wordSpeakBtn) {
+    setTimeout(() => {
+      if (!container.isConnected || hasAnswered) return;
+      wordSpeakBtn.classList.add('animate-pulse', 'ring-4', 'ring-amber-300', 'bg-amber-100');
+      const onEnd = () => wordSpeakBtn.classList.remove('animate-pulse', 'ring-4', 'ring-amber-300', 'bg-amber-100');
+      speech.speakEnglish(exercise.soundCue, onEnd);
+    }, 400);
+  }
+
   const instructionSpeakBtn = container.querySelector('#btn-speak-instruction');
   if (instructionSpeakBtn) {
     instructionSpeakBtn.addEventListener('click', () => {
@@ -443,7 +494,7 @@ export function renderExerciseCard(container, exercise, onComplete) {
     // other items may carry a short explanation, e.g. the syllable split "בַּ – לּוֹן"
     let translationHtml = '';
     if (exercise.correctAnswerHebrew) {
-      translationHtml = `<div class="mt-1 text-lg font-black" dir="ltr">${exercise.targetWordVocalized} = <span dir="rtl">${exercise.correctAnswerHebrew}</span></div>`;
+      translationHtml = `<div class="mt-1 text-lg font-black" dir="ltr">${exercise.revealWord || exercise.targetWordVocalized} = <span dir="rtl">${exercise.correctAnswerHebrew}</span></div>`;
     } else if (exercise.feedbackNote) {
       translationHtml = `<div class="mt-1 text-xl font-black" dir="auto">${exercise.feedbackNote}</div>`;
     }

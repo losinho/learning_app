@@ -180,6 +180,47 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'diamond', emoji: '🔷', he: 'מעוין' }
     ]
   },
+  actions: {
+    title: 'Actions (פעולות)',
+    words: [
+      { word: 'run', emoji: '🏃', he: 'לרוץ' },
+      { word: 'walk', emoji: '🚶', he: 'ללכת' },
+      { word: 'swim', emoji: '🏊', he: 'לשחות' },
+      { word: 'dance', emoji: '💃', he: 'לרקוד' },
+      { word: 'sing', emoji: '🎤', he: 'לשיר' },
+      { word: 'clap', emoji: '👏', he: 'למחוא כפיים' },
+      { word: 'sleep', emoji: '😴', he: 'לישון' },
+      { word: 'write', emoji: '✍️', he: 'לכתוב' },
+      { word: 'ride', emoji: '🚴', he: 'לרכוב' },
+      { word: 'climb', emoji: '🧗', he: 'לטפס' }
+    ]
+  },
+  feelings: {
+    title: 'Feelings (רגשות)',
+    words: [
+      { word: 'happy', emoji: '😊', he: 'שמח' },
+      { word: 'sad', emoji: '😢', he: 'עצוב' },
+      { word: 'angry', emoji: '😠', he: 'כועס' },
+      { word: 'scared', emoji: '😨', he: 'מפחד' },
+      { word: 'surprised', emoji: '😮', he: 'מופתע' },
+      { word: 'tired', emoji: '🥱', he: 'עייף' },
+      { word: 'sick', emoji: '🤒', he: 'חולה' },
+      { word: 'silly', emoji: '🤪', he: 'מצחיק' }
+    ]
+  },
+  greetings: {
+    title: 'Greetings (ברכות ומילים)',
+    words: [
+      { word: 'hello', emoji: '👋', he: 'שלום' },
+      { word: 'thank you', emoji: '🙏', he: 'תודה' },
+      { word: 'yes', emoji: '👍', he: 'כן' },
+      { word: 'no', emoji: '👎', he: 'לא' },
+      { word: 'good morning', emoji: '🌅', he: 'בוקר טוב' },
+      { word: 'good night', emoji: '🌙', he: 'לילה טוב' },
+      { word: 'OK', emoji: '👌', he: 'בסדר' },
+      { word: 'stop', emoji: '✋', he: 'עצור' }
+    ]
+  },
   numbers: {
     title: 'Numbers (מספרים)',
     words: [
@@ -268,15 +309,53 @@ export function generateEnglishLetterMatch(letter = null) {
   };
 }
 
+// Topic picker chips: the topic's Hebrew name (from its title) and its first word's emoji
+export function getEnglishTopicChips() {
+  return Object.entries(ENGLISH_VOCABULARY_TOPICS).map(([key, topic]) => ({
+    key,
+    label: (topic.title.match(/\((.+)\)/) || [null, topic.title])[1],
+    emoji: topic.words[0].emoji
+  }));
+}
+
+// Listen-only: the word is hidden and spoken automatically; it is revealed in the feedback
+function toListenOnly(ex) {
+  if (!ex.correctAnswerHebrew) return ex; // letter questions need the letter on screen
+  return {
+    ...ex,
+    revealWord: ex.targetWordVocalized,
+    targetWordVocalized: '👂 ?',
+    instructionEnglish: 'Listen and choose',
+    autoSpeak: true
+  };
+}
+
 // Generates a fresh round. With no topic, the round mixes topics (no topic twice in a row)
 // and includes ~1 letter-matching question per 5 questions.
-// With a topic key ('fruits', 'colors', ...) the whole round practices that topic.
-export function getEnglishAge5Exercises(count = 10, topicKey = null) {
+// topicKey: a topic ('fruits', 'colors', ...) practises only that topic; 'letters' practises only letters.
+// options.listenOnly hides the English word so the child must recognise it by ear.
+export function getEnglishAge5Exercises(count = 20, topicKey = null, options = {}) {
+  const round = buildEnglishRound(count, topicKey);
+  return options.listenOnly ? round.map(toListenOnly) : round;
+}
+
+function buildEnglishRound(count, topicKey) {
+  if (topicKey === 'letters') {
+    // 26 letters, so a round of up to 26 never repeats one
+    const letters = shuffle(ALPHABET);
+    const list = [];
+    for (let i = 0; i < count; i++) list.push(generateEnglishLetterMatch(letters[i % letters.length]));
+    return list;
+  }
+
   if (topicKey && ENGLISH_VOCABULARY_TOPICS[topicKey]) {
-    const words = shuffle(ENGLISH_VOCABULARY_TOPICS[topicKey].words);
+    // A topic has 6–22 words, so a 20-question round goes through all of them before repeating any
+    const words = ENGLISH_VOCABULARY_TOPICS[topicKey].words;
+    let queue = [];
     const list = [];
     for (let i = 0; i < count; i++) {
-      list.push(generateEnglishWordMatch(topicKey, words[i % words.length]));
+      if (queue.length === 0) queue = shuffle(words);
+      list.push(generateEnglishWordMatch(topicKey, queue.pop()));
     }
     return list;
   }

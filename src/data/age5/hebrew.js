@@ -58,6 +58,18 @@ export const HEBREW_VOCABULARY_BANK = [
   { word: 'לֵב', sound: 'לֵב', letter: 'ל', emoji: '❤️', syllables: ['לֵב'] }
 ];
 
+// Plurals for the singular/plural game, keyed by the word bank's singular. Irregular plurals
+// (בַּיִת → בָּתִּים, נֵר → נֵרוֹת, דְּבוֹרָה → דְּבוֹרִים) are included on purpose — gan children are learning them.
+export const HEBREW_PLURALS = {
+  'כֶּלֶב': 'כְּלָבִים', 'חָתוּל': 'חֲתוּלִים', 'דָּג': 'דָּגִים', 'סוּס': 'סוּסִים', 'קוֹף': 'קוֹפִים',
+  'אַרְנָב': 'אַרְנָבִים', 'צָב': 'צַבִּים', 'פִּיל': 'פִּילִים', 'צִפּוֹר': 'צִפֳּרִים', 'דֹּב': 'דֻּבִּים',
+  'פַּרְפַּר': 'פַּרְפָּרִים', 'דְּבוֹרָה': 'דְּבוֹרִים', 'בַּיִת': 'בָּתִּים', 'סֵפֶר': 'סְפָרִים',
+  'שָׁעוֹן': 'שְׁעוֹנִים', 'כַּדּוּר': 'כַּדּוּרִים', 'בַּלּוֹן': 'בַּלּוֹנִים', 'מְכוֹנִית': 'מְכוֹנִיּוֹת',
+  'סִירָה': 'סִירוֹת', 'נֵר': 'נֵרוֹת', 'תַּפּוּחַ': 'תַּפּוּחִים', 'בָּנָנָה': 'בָּנָנוֹת', 'תּוּת': 'תּוּתִים',
+  'עֻגָּה': 'עוּגוֹת', 'גְּלִידָה': 'גְּלִידוֹת', 'כּוֹכָב': 'כּוֹכָבִים', 'עֵץ': 'עֵצִים', 'פֶּרַח': 'פְּרָחִים',
+  'עָנָן': 'עֲנָנִים'
+};
+
 // Rhyme families: every word in a family rhymes with the others; words in different families do not.
 export const HEBREW_RHYME_FAMILIES = [
   [{ word: 'שָׁעוֹן', emoji: '⏰' }, { word: 'בַּלּוֹן', emoji: '🎈' }, { word: 'עִתּוֹן', emoji: '📰' }, { word: 'עִפָּרוֹן', emoji: '✏️' }],
@@ -242,19 +254,104 @@ export function generateLetterName() {
   };
 }
 
-// Generates a fresh round of 10 exercises every time the child practices!
-// Cycle: word-picture, initial sound, syllables, rhyme, letter names (each twice per round)
-export function getHebrewAge5Exercises(count = 10) {
+// Final sound (צליל סוגר) — final letter forms count as their base letter (ן = נ)
+const FINAL_FORMS = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+// Words ending in these letters end in a vowel sound, so they are never the target
+const VOWEL_ENDINGS = ['ה', 'ו', 'א', 'ע', 'י'];
+// At the end of a word, כ without dagesh sounds like ח and ב without dagesh like ו
+const FINAL_SAME_SOUND_GROUPS = [...SAME_SOUND_GROUPS, ['ח', 'כ'], ['ב', 'ו']];
+
+function lastLetter(word) {
+  const bare = word.replace(/[֑-ׇ]/g, '');
+  return bare[bare.length - 1];
+}
+
+function baseLetter(letter) {
+  return FINAL_FORMS[letter] || letter;
+}
+
+function endsAlike(letterA, letterB) {
+  const a = baseLetter(letterA);
+  const b = baseLetter(letterB);
+  return a === b || FINAL_SAME_SOUND_GROUPS.some(group => group.includes(a) && group.includes(b));
+}
+
+// "איזו תמונה מסתיימת באות ל?"
+export function generateFinalSound() {
+  const pool = HEBREW_VOCABULARY_BANK.filter(item => !VOWEL_ENDINGS.includes(baseLetter(lastLetter(item.word))));
+  const target = pickRandom(pool);
+  const finalChar = lastLetter(target.word);
+  const distractors = shuffle(HEBREW_VOCABULARY_BANK.filter(item => !endsAlike(lastLetter(item.word), finalChar))).slice(0, 2);
+
+  const options = shuffle([target, ...distractors]).map(item => ({ id: item.word, emoji: item.emoji }));
+
+  return {
+    id: `heb_5_final_${target.word}`,
+    ageGroup: '5',
+    category: 'hebrew',
+    type: 'image_word_match',
+    title: 'צליל סוגר',
+    instructionHebrew: `איזו תמונה מסתיימת באות ${finalChar}?`,
+    targetWordVocalized: `האות ${finalChar}`,
+    soundCue: `איזו תמונה מסתיימת באות ${baseLetter(finalChar)}?`,
+    correctOptionId: target.word,
+    feedbackNote: `${target.emoji} ${target.word}`,
+    options
+  };
+}
+
+// Singular/plural (יחיד ורבים): hear "כְּלָבִים" → pick the picture with many dogs (or "כֶּלֶב" → one dog)
+export function generatePluralMatch() {
+  const pool = HEBREW_VOCABULARY_BANK.filter(item => HEBREW_PLURALS[item.word]);
+  const target = pickRandom(pool);
+  const other = pickRandom(pool.filter(item => item.word !== target.word));
+  const plural = HEBREW_PLURALS[target.word];
+  const askPlural = Math.random() < 0.5;
+
+  const one = item => ({ id: `one_${item.word}`, emoji: item.emoji });
+  const many = item => ({ id: `many_${item.word}`, emoji: `<span style="font-size:0.45em">${item.emoji.repeat(3)}</span>` });
+  // Always one and many of the target, plus the other animal/object in the asked number
+  const options = shuffle([one(target), many(target), askPlural ? many(other) : one(other)]);
+  const word = askPlural ? plural : target.word;
+
+  return {
+    id: `heb_5_plural_${word}`,
+    ageGroup: '5',
+    category: 'hebrew',
+    type: 'image_word_match',
+    title: 'יחיד ורבים',
+    instructionHebrew: `באיזו תמונה יש ${word}?`,
+    targetWordVocalized: word,
+    soundCue: word,
+    correctOptionId: askPlural ? `many_${target.word}` : `one_${target.word}`,
+    feedbackNote: `${target.emoji} ${target.word} – ${target.emoji.repeat(3)} ${plural}`,
+    options
+  };
+}
+
+// Generates a fresh round every time the child practices!
+// Cycle: word-picture, initial sound, syllables, rhyme, letter names, plural, final sound.
+// The same question (same type + same target) never appears twice in one round.
+export function getHebrewAge5Exercises(count = 20) {
   const generators = [
     generateDynamicWordMatch,
     generateDynamicInitialSound,
     generateSyllableCount,
     generateRhymeMatch,
-    generateLetterName
+    generateLetterName,
+    generatePluralMatch,
+    generateFinalSound
   ];
+  const used = new Set();
   const list = [];
   for (let i = 0; i < count; i++) {
-    list.push(generators[i % generators.length]());
+    const generate = generators[i % generators.length];
+    let ex = generate();
+    for (let tries = 0; tries < 30 && used.has(`${ex.title}|${ex.targetWordVocalized}`); tries++) {
+      ex = generate();
+    }
+    used.add(`${ex.title}|${ex.targetWordVocalized}`);
+    list.push(ex);
   }
   return list;
 }

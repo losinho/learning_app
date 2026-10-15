@@ -8,6 +8,7 @@ import { renderParentModal } from './components/parentModal.js';
 import { renderExerciseCard } from './components/exerciseCard.js';
 import { showVictoryModal } from './components/victoryModal.js';
 import { getExercisesForProfile } from './data/index.js';
+import { renderEnglishTopicPicker } from './components/englishTopicPicker.js';
 
 class LearningApp {
   constructor() {
@@ -128,7 +129,20 @@ class LearningApp {
       </div>
     `;
 
-    this.exerciseMount.innerHTML = progressHeader + `<div id="card-inner-mount"></div>`;
+    this.exerciseMount.innerHTML = `<div id="topic-picker-mount"></div>` + progressHeader + `<div id="card-inner-mount"></div>`;
+
+    // Age-5 English: topic picker + listen-only toggle above the exercise
+    const profile = storage.getActiveProfile();
+    if (this.activeSubject === 'english' && (profile ? profile.ageGroup : '5') === '5') {
+      renderEnglishTopicPicker(this.exerciseMount.querySelector('#topic-picker-mount'), profile, (choice) => {
+        if (profile) storage.updateProfile(profile.id, choice);
+        // A new choice starts a new round (like switching subject)
+        this.currentIndex = 0;
+        this.sessionStars = 0;
+        this.loadExercises();
+        this.renderCurrentExercise();
+      });
+    }
 
     const cardInner = this.exerciseMount.querySelector('#card-inner-mount');
     renderExerciseCard(cardInner, currentEx, (completedEx, attemptResult) => {
