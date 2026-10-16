@@ -1,66 +1,128 @@
 // Curriculum Data Repository Coordinator
+// Every subject lists its content sources and the grades each source is written for. A round for a child
+// is built from three parts:
+//   - core: the child's own grade (most of the round)
+//   - challenge: the NEXT grade, if content exists for it (share depends on the challenge setting, see below)
+//   - review: 2 questions from the PREVIOUS grade, if content exists for it
+// Adding a new grade later only means adding a source here; the mixing logic stays the same.
 import { getHebrewAge5Exercises } from './age5/hebrew.js';
 import { getEnglishAge5Exercises } from './age5/english.js';
 import { getMathAge5Exercises } from './age5/math.js';
 
 import { hebrewAge8_9ReadingPassages, hebrewAge8_9Grammar } from './age8_9/hebrew.js';
 import { englishAge8_9Exercises } from './age8_9/english.js';
-import { getMathAge8Exercises } from './age8_9/math.js';
+import { getMathGrade3Exercises } from './grades/math3.js';
+import { getMathGrade4Exercises } from './grades/math4.js';
+import { getEnglishGrade3Exercises } from './grades/english3.js';
+import { getHebrewGrade1Exercises } from './grades/hebrew1.js';
+import { getMathGrade1Exercises } from './grades/math1.js';
+import { spreadInto } from './grades/roundUtils.js';
+import { gradeOfProfile, nextGrade, previousGrade } from './grades.js';
 
-// Questions per round. Fixed age 8-9 lists that are shorter than this use all their items (no repeats).
+// Questions per round. Fixed lists that are shorter than this use all their items (no repeats).
 export const ROUND_SIZE = 20;
+const REVIEW_COUNT = 2;
 
-export function getExercisesForProfile(profile, subject = 'hebrew') {
-  const ageGroup = profile ? profile.ageGroup : '5';
+function shuffled(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
 
-  if (ageGroup === '5') {
-    switch (subject) {
-      case 'hebrew':
-        // Generates a fresh, infinite round of varied exercises each session
-        return getHebrewAge5Exercises(ROUND_SIZE);
-      case 'math':
-        // Generates a fresh, infinite round of varied math drills each session
-        return getMathAge5Exercises(ROUND_SIZE);
-      case 'english':
-        // Mixed topics by default; the child can pick one topic and turn on listen-only (saved per profile)
-        return getEnglishAge5Exercises(ROUND_SIZE, profile?.englishTopic || null, { listenOnly: Boolean(profile?.englishListenOnly) });
-      default:
-        return getHebrewAge5Exercises(ROUND_SIZE);
-    }
-  } else {
-    // Age 8-9 (Grades 3-4)
-    switch (subject) {
-      case 'hebrew': {
-        const readingItems = [];
-        hebrewAge8_9ReadingPassages.forEach(set => {
-          set.questions.forEach((q, qIndex) => {
-            readingItems.push({
-              id: `${set.id}_${q.id}`,
-              ageGroup: '8-9',
-              category: 'hebrew',
-              type: 'reading_comprehension_question',
-              title: `${set.title} (שאלה ${qIndex + 1}/${set.questions.length})`,
-              passageTitle: set.passageTitle,
-              passageText: set.passageText,
-              instructionHebrew: 'קראו את הקטע וענו על השאלה הבאה:',
-              prompt: q.prompt,
-              options: q.options.map((optText, optIdx) => ({
-                id: String(optIdx),
-                label: optText
-              })),
-              correctIndex: q.correctIndex
-            });
-          });
-        });
-        const combined = [...readingItems, ...hebrewAge8_9Grammar];
-        return combined.sort(() => Math.random() - 0.5).slice(0, ROUND_SIZE);
-      }
-      case 'math':
-        return getMathAge8Exercises(ROUND_SIZE);
-      case 'english':
-        return [...englishAge8_9Exercises].sort(() => Math.random() - 0.5).slice(0, ROUND_SIZE);
-      default:
-        return getMathAge8Exercises(ROUND_SIZE);
-    }
-  }
+// Grades 3-4 Hebrew: the Ministry sets these goals "by the end of grade 4", so both grades share one pool
+function hebrewGrades3And4(count) {
+  const readingItems = [];
+  hebrewAge8_9ReadingPassages.forEach(set => {
+    set.questions.forEach((q, qIndex) => {
+      readingItems.push({
+        id: `${set.id}_${q.id}`,
+        category: 'hebrew',
+        type: 'reading_comprehension_question',
+        title: `${set.title} (שאלה ${qIndex + 1}/${set.questions.length})`,
+        passageTitle: set.passageTitle,
+        passageText: set.passageText,
+        instructionHebrew: 'קראו את הקטע וענו על השאלה הבאה:',
+        prompt: q.prompt,
+        options: q.options.map((optText, optIdx) => ({
+          id: String(optIdx),
+          label: optText
+        })),
+        correctIndex: q.correctIndex
+      });
+    });
+  });
+  return shuffled([...readingItems, ...hebrewAge8_9Grammar]).slice(0, count);
+}
+
+// build(count, profile) returns up to `count` exercises without repeats
+const SOURCES = {
+  hebrew: [
+    { grades: ['gan'], build: (n) => getHebrewAge5Exercises(n) },
+    { grades: ['1'], build: (n) => getHebrewGrade1Exercises(n) },
+    { grades: ['3', '4'], build: (n) => hebrewGrades3And4(n) }
+  ],
+  math: [
+    { grades: ['gan'], build: (n) => getMathAge5Exercises(n) },
+    { grades: ['1'], build: (n) => getMathGrade1Exercises(n) },
+    { grades: ['3'], build: (n) => getMathGrade3Exercises(n) },
+    { grades: ['4'], build: (n) => getMathGrade4Exercises(n) }
+  ],
+  english: [
+    // Gan and grade 1 (no official English before grade 3): mixed topics by default; the child can pick one topic
+    // and turn on listen-only (saved per profile)
+    { grades: ['gan', '1'], build: (n, profile) => getEnglishAge5Exercises(n, profile?.englishTopic || null, { listenOnly: Boolean(profile?.englishListenOnly) }) },
+    { grades: ['3'], build: (n) => getEnglishGrade3Exercises(n) },
+    { grades: ['4'], build: (n) => shuffled(englishAge8_9Exercises).slice(0, n) }
+  ]
+};
+
+// Share of the round taken by next-grade challenges, from the profile's challenge setting.
+// 'auto' (default) adapts to the child's last challenge results in this subject.
+const CHALLENGE_SHARES = { off: 0, some: 0.2, many: 0.4 };
+
+export function challengeShare(profile, subject) {
+  const mode = profile?.challengeMode || 'auto';
+  if (mode !== 'auto') return CHALLENGE_SHARES[mode] ?? 0.2;
+  const history = profile?.challengeHistory?.[subject] || [];
+  if (history.length < 5) return 0.2;
+  const accuracy = history.filter(Boolean).length / history.length;
+  if (accuracy >= 0.9) return 0.4;
+  if (accuracy >= 0.75) return 0.3;
+  if (accuracy < 0.5) return 0.1;
+  return 0.2;
+}
+
+// A source for `grade` that is not also the core source (so a shared pool never challenges itself)
+function sourceFor(sources, grade, coreGrade) {
+  if (!grade) return null;
+  return sources.find(s => s.grades.includes(grade) && !s.grades.includes(coreGrade)) || null;
+}
+
+const tag = (grade, extra = {}) => ex => ({ ...ex, grade, ...extra });
+
+// Subjects that can add next-grade challenges for this grade (empty when no next-grade content exists yet)
+export function challengeSubjectsFor(grade) {
+  const challengeGrade = nextGrade(grade);
+  return Object.keys(SOURCES).filter(subject => sourceFor(SOURCES[subject], challengeGrade, grade));
+}
+
+export function getExercisesForProfile(profile, subject = 'hebrew', size = ROUND_SIZE) {
+  // Profiles still waiting for the one-time grade question are treated as grade 3 until they answer
+  const grade = gradeOfProfile(profile) || '3';
+  const sources = SOURCES[subject] || SOURCES.hebrew;
+  const core = sources.find(s => s.grades.includes(grade));
+  if (!core) return [];
+
+  const challengeGrade = nextGrade(grade);
+  const challengeSource = sourceFor(sources, challengeGrade, grade);
+  const reviewGrade = previousGrade(grade);
+  const reviewSource = sourceFor(sources, reviewGrade, grade);
+
+  const challengeCount = challengeSource ? Math.round(size * challengeShare(profile, subject)) : 0;
+  const reviewCount = reviewSource ? REVIEW_COUNT : 0;
+
+  const coreItems = core.build(size - challengeCount - reviewCount, profile).map(tag(grade));
+  const challengeItems = challengeCount ? challengeSource.build(challengeCount, profile).map(tag(challengeGrade, { isChallenge: true })) : [];
+  const reviewItems = reviewCount ? reviewSource.build(reviewCount, profile).map(tag(reviewGrade, { isReview: true })) : [];
+
+  // Review first-ish (warm-up), challenges spread through the round
+  return spreadInto([...reviewItems, ...coreItems], challengeItems);
 }

@@ -194,9 +194,9 @@ export const hebrewAge8_9Grammar = [
     targetWordVocalized: 'מִכְתָּב • כְּתִיבָה • כָּתַב',
     correctOptionId: 'ktv',
     options: [
-      { id: 'ktv', emoji: '✍️', label: 'כ-ת-ב' },
-      { id: 'lmd', emoji: '📚', label: 'ל-מ-ד' },
-      { id: 'shmr', emoji: '🛡️', label: 'ש-מ-ר' }
+      { id: 'ktv', label: 'כ-ת-ב' },
+      { id: 'lmd', label: 'ל-מ-ד' },
+      { id: 'shmr', label: 'ש-מ-ר' }
     ]
   },
   {
@@ -210,9 +210,9 @@ export const hebrewAge8_9Grammar = [
     targetWordVocalized: 'תַּלְמִיד • לִמּוּד • לָמַד',
     correctOptionId: 'lmd',
     options: [
-      { id: 'spr', emoji: '📖', label: 'ס-פ-ר' },
-      { id: 'lmd', emoji: '🎓', label: 'ל-מ-ד' },
-      { id: 'dbr', emoji: '🗣️', label: 'ד-ב-ר' }
+      { id: 'spr', label: 'ס-פ-ר' },
+      { id: 'lmd', label: 'ל-מ-ד' },
+      { id: 'dbr', label: 'ד-ב-ר' }
     ]
   },
   {
@@ -226,9 +226,9 @@ export const hebrewAge8_9Grammar = [
     targetWordVocalized: 'מִשְׁמָר • שׁוֹמֵר • שָׁמַר',
     correctOptionId: 'shmr',
     options: [
-      { id: 'shmr', emoji: '🛡️', label: 'ש-מ-ר' },
-      { id: 'shpt', emoji: '⚖️', label: 'ש-פ-ט' },
-      { id: 'shma', emoji: '👂', label: 'ש-מ-ע' }
+      { id: 'shmr', label: 'ש-מ-ר' },
+      { id: 'shpt', label: 'ש-פ-ט' },
+      { id: 'shma', label: 'ש-מ-ע' }
     ]
   },
   {
@@ -242,9 +242,9 @@ export const hebrewAge8_9Grammar = [
     targetWordVocalized: 'שֻׁלְחָן (יָחִיד)',
     correctOptionId: 'shulhanot',
     options: [
-      { id: 'shulhanim', emoji: '❌', label: 'שֻׁלְחָנִים' },
-      { id: 'shulhanot', emoji: '🪵', label: 'שֻׁלְחָנוֹת' },
-      { id: 'shulhan', emoji: '🪑', label: 'שֻׁלְחָנִיּוֹת' }
+      { id: 'shulhanim', label: 'שֻׁלְחָנִים' },
+      { id: 'shulhanot', label: 'שֻׁלְחָנוֹת' },
+      { id: 'shulhan', label: 'שֻׁלְחָנִיּוֹת' }
     ]
   },
   {
@@ -258,9 +258,9 @@ export const hebrewAge8_9Grammar = [
     targetWordVocalized: 'חַלּוֹן (יָחִיד)',
     correctOptionId: 'hallonot',
     options: [
-      { id: 'hallonim', emoji: '❌', label: 'חַלּוֹנִים' },
-      { id: 'hallonot', emoji: '🪟', label: 'חַלּוֹנוֹת' },
-      { id: 'halloniyot', emoji: '❌', label: 'חַלּוֹנִיּוֹת' }
+      { id: 'hallonim', label: 'חַלּוֹנִים' },
+      { id: 'hallonot', label: 'חַלּוֹנוֹת' },
+      { id: 'halloniyot', label: 'חַלּוֹנִיּוֹת' }
     ]
   }
 ];

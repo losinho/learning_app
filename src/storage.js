@@ -22,7 +22,9 @@ class StorageService {
     const defaultProfile = {
       id: 'profile_' + Date.now(),
       name: 'איתי',
-      ageGroup: '5', // '5' or '8-9'
+      grade: 'gan', // 'gan', '3', '4' (older profiles may only have ageGroup '5' / '8-9')
+      ageGroup: '5',
+      challengeMode: 'auto', // next-grade challenges: 'auto' | 'off' | 'some' | 'many'
       avatar: '🦁',
       createdAt: Date.now(),
       stars: 0,
@@ -84,11 +86,13 @@ class StorageService {
     }
   }
 
-  createProfile(name, ageGroup, avatar) {
+  createProfile(name, grade, avatar) {
     const newProfile = {
       id: 'profile_' + Date.now(),
       name: name.trim() || 'ילד/ה',
-      ageGroup: ageGroup || '5',
+      grade: grade || 'gan',
+      ageGroup: grade === 'gan' || !grade ? '5' : grade, // kept for older code paths and session logs
+      challengeMode: 'auto',
       avatar: avatar || DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)],
       createdAt: Date.now(),
       stars: 0,
@@ -149,6 +153,26 @@ class StorageService {
     return profile;
   }
 
+  // An extra star for solving a next-grade challenge question
+  addBonusStar() {
+    const profile = this.getActiveProfile();
+    if (!profile) return null;
+    profile.stars = (profile.stars || 0) + 1;
+    this.save();
+    return profile;
+  }
+
+  // Keeps the last 10 challenge results per subject; used by the automatic challenge level
+  recordChallengeResult(subject, isCorrect) {
+    const profile = this.getActiveProfile();
+    if (!profile) return;
+    if (!profile.challengeHistory) profile.challengeHistory = {};
+    const history = profile.challengeHistory[subject] || [];
+    history.push(Boolean(isCorrect));
+    profile.challengeHistory[subject] = history.slice(-10);
+    this.save();
+  }
+
   saveSession(sessionData) {
     const profile = this.getActiveProfile();
     if (!profile) return;
@@ -177,6 +201,7 @@ class StorageService {
 
     const logs = profile.sessionLogs || [];
     const topicStats = {};
+    const challengeStats = { total: 0, correct: 0 };
     const subjectStats = {
       hebrew: { total: 0, correct: 0 },
       math: { total: 0, correct: 0 },
@@ -190,6 +215,12 @@ class StorageService {
       }
 
       (session.questions || []).forEach(q => {
+        // Next-grade challenges are reported separately: a missed challenge is not a weakness
+        if (q.isChallenge) {
+          challengeStats.total += 1;
+          if (q.isCorrect) challengeStats.correct += 1;
+          return;
+        }
         const topicName = q.topic || q.title || 'כללי';
         if (!topicStats[topicName]) {
           topicStats[topicName] = { 
@@ -235,6 +266,7 @@ class StorageService {
       subjectStats,
       allTopics,
       problemAreas,
+      challengeStats,
       recentSessions: logs
     };
   }

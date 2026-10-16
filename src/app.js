@@ -9,6 +9,8 @@ import { renderExerciseCard } from './components/exerciseCard.js';
 import { showVictoryModal } from './components/victoryModal.js';
 import { getExercisesForProfile } from './data/index.js';
 import { renderEnglishTopicPicker } from './components/englishTopicPicker.js';
+import { renderGradeChoiceModal } from './components/gradeChoiceModal.js';
+import { gradeOfProfile, needsGradeChoice } from './data/grades.js';
 
 class LearningApp {
   constructor() {
@@ -37,6 +39,20 @@ class LearningApp {
     this.renderLayout();
     this.loadExercises();
     this.renderCurrentExercise();
+    this.askGradeIfNeeded();
+  }
+
+  // Profiles from before grades existed ('8-9') are asked once: grade 3 or grade 4?
+  askGradeIfNeeded() {
+    const profile = storage.getActiveProfile();
+    if (!needsGradeChoice(profile)) return;
+    renderGradeChoiceModal(this.modalMount, profile, () => {
+      this.renderLayout();
+      this.currentIndex = 0;
+      this.sessionStars = 0;
+      this.loadExercises();
+      this.renderCurrentExercise();
+    });
   }
 
   renderLayout() {
@@ -55,6 +71,7 @@ class LearningApp {
       this.sessionStars = 0;
       this.loadExercises();
       this.renderCurrentExercise();
+      this.askGradeIfNeeded();
     });
   }
 
@@ -82,6 +99,7 @@ class LearningApp {
       timestamp: Date.now(),
       subject: this.activeSubject,
       ageGroup: profile ? profile.ageGroup : '5',
+      grade: gradeOfProfile(profile),
       totalQuestions: this.exercises.length,
       correctCount: 0,
       incorrectCount: 0,
@@ -131,9 +149,9 @@ class LearningApp {
 
     this.exerciseMount.innerHTML = `<div id="topic-picker-mount"></div>` + progressHeader + `<div id="card-inner-mount"></div>`;
 
-    // Age-5 English: topic picker + listen-only toggle above the exercise
+    // Gan / grade 1 English: topic picker + listen-only toggle above the exercise
     const profile = storage.getActiveProfile();
-    if (this.activeSubject === 'english' && (profile ? profile.ageGroup : '5') === '5') {
+    if (this.activeSubject === 'english' && ['gan', '1'].includes(gradeOfProfile(profile))) {
       renderEnglishTopicPicker(this.exerciseMount.querySelector('#topic-picker-mount'), profile, (choice) => {
         if (profile) storage.updateProfile(profile.id, choice);
         // A new choice starts a new round (like switching subject)
@@ -153,9 +171,19 @@ class LearningApp {
   handleExerciseCompleted(completedEx, attemptResult) {
     const isCorrect = Boolean(attemptResult && attemptResult.isCorrect);
 
+    // Next-grade challenges feed the automatic challenge level
+    if (completedEx.isChallenge) {
+      storage.recordChallengeResult(this.activeSubject, isCorrect);
+    }
+
     if (isCorrect) {
       this.sessionStars += 1;
-      const updatedProfile = storage.recordSuccess(completedEx.id, this.activeSubject);
+      let updatedProfile = storage.recordSuccess(completedEx.id, this.activeSubject);
+      // A solved challenge earns one bonus star
+      if (completedEx.isChallenge) {
+        this.sessionStars += 1;
+        updatedProfile = storage.addBonusStar() || updatedProfile;
+      }
       if (updatedProfile) {
         updateHeaderStars(updatedProfile.stars);
         sfx.playStar();
@@ -180,6 +208,9 @@ class LearningApp {
         userAnswer: attemptResult?.userAnswer !== undefined ? attemptResult.userAnswer : '-',
         correctAnswer: attemptResult?.correctAnswer !== undefined ? attemptResult.correctAnswer : '-',
         isCorrect: isCorrect,
+        grade: completedEx.grade,
+        isChallenge: Boolean(completedEx.isChallenge),
+        isReview: Boolean(completedEx.isReview),
         timestamp: Date.now()
       });
     }

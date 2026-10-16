@@ -1,6 +1,8 @@
 // Parent Analytics & Learning Difficulty Report Modal
 import { storage } from '../storage.js';
 import { sfx } from '../audio/sfx.js';
+import { gradeOfProfile, gradeLabel, nextGrade } from '../data/grades.js';
+import { challengeSubjectsFor } from '../data/index.js';
 
 let isParentGateUnlocked = false;
 
@@ -131,6 +133,8 @@ function renderDashboard(container, profile, analytics, onClose) {
               <div class="text-[11px] text-slate-500 font-medium">${problemAreas.length > 0 ? 'דורש תרגול' : 'שליטה מצוינת'}</div>
             </div>
           </div>
+
+          ${renderChallengeSection(profile, analytics.challengeStats)}
 
           <!-- PROBLEM AREAS & CHALLENGES (The exact focus requested by parent) -->
           <div class="bg-rose-50/70 border-2 border-rose-200 rounded-2xl p-4">
@@ -285,6 +289,15 @@ function renderDashboard(container, profile, analytics, onClose) {
     if (onClose) onClose();
   };
 
+  // Challenge level setting (saved on the child's profile); re-render the dashboard to show the change
+  container.querySelectorAll('.challenge-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      storage.updateProfile(profile.id, { challengeMode: btn.dataset.mode });
+      sfx.playClick();
+      renderParentModal(container, onClose);
+    });
+  });
+
   container.querySelector('#btn-close-parent-modal').addEventListener('click', closeModal);
   container.querySelector('#btn-close-parent-modal-bottom').addEventListener('click', closeModal);
   container.querySelector('#parent-modal-backdrop').addEventListener('click', (e) => {
@@ -318,9 +331,69 @@ function renderDashboard(container, profile, analytics, onClose) {
   }
 }
 
+const CHALLENGE_MODES = [
+  { mode: 'auto', label: 'אוטומטי', hint: 'מתחיל ב-20% ועולה עד 40% כשהילד/ה מצליח/ה, או יורד ל-10% כשקשה' },
+  { mode: 'off', label: 'כבוי', hint: 'רק שאלות מהכיתה של הילד/ה' },
+  { mode: 'some', label: 'מעט', hint: 'כ-20% מהשאלות בכל סבב' },
+  { mode: 'many', label: 'הרבה', hint: 'כ-40% מהשאלות בכל סבב' }
+];
+
+// "⭐ Challenge questions": next-grade results (not counted as weaknesses) and the challenge level setting
+function renderChallengeSection(profile, challengeStats = { total: 0, correct: 0 }) {
+  const grade = gradeOfProfile(profile);
+  const subjects = grade ? challengeSubjectsFor(grade) : [];
+  const mode = profile.challengeMode || 'auto';
+  const current = CHALLENGE_MODES.find(m => m.mode === mode) || CHALLENGE_MODES[0];
+  const subjectNames = { hebrew: 'עברית', math: 'חשבון', english: 'אנגלית' };
+  const nextLabel = gradeLabel(nextGrade(grade));
+
+  const availability = subjects.length
+    ? `שאלות מ${nextLabel} משולבות ב: ${subjects.map(s => subjectNames[s]).join(', ')}.`
+    : `עדיין אין תוכן ל${nextLabel || 'כיתה הבאה'}, ולכן אין כרגע שאלות אתגר. ההגדרה תופעל כשיתווסף תוכן.`;
+
+  return `
+    <div class="bg-amber-50/70 border-2 border-amber-200 rounded-2xl p-4">
+      <h3 class="text-base font-black text-amber-950 flex items-center gap-2 mb-1">
+        <span>⭐</span> שאלות אתגר מהכיתה הבאה
+      </h3>
+      <p class="text-xs text-slate-600 font-semibold mb-2">${availability} טעות בשאלת אתגר אינה נחשבת "תחום לחיזוק".</p>
+      ${challengeStats.total > 0 ? `
+        <div class="text-sm font-black text-amber-900 mb-2">נפתרו ${challengeStats.correct} מתוך ${challengeStats.total} שאלות אתגר (${Math.round((challengeStats.correct / challengeStats.total) * 100)}%)</div>
+      ` : ''}
+      <div class="flex flex-wrap gap-2 items-center">
+        <span class="text-xs font-bold text-slate-600">רמת אתגר:</span>
+        ${CHALLENGE_MODES.map(m => `
+          <button class="challenge-mode-btn px-3 py-1.5 rounded-xl border-2 text-xs font-bold cursor-pointer ${m.mode === mode ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-amber-50'}" data-mode="${m.mode}">
+            ${m.label}
+          </button>
+        `).join('')}
+      </div>
+      <p class="text-[11px] text-slate-500 font-semibold mt-1.5">${current.hint}</p>
+    </div>
+  `;
+}
+
 function getPedagogicalTip(topic) {
   if (topic.includes('השוואת כמויות')) {
     return 'מומלץ לתרגל השוואת כמויות עם חפצים מוחשיים בבית (למשל: איפה יש יותר תפוחים? היכן יש פחות?).';
+  }
+  if (topic.includes('ערך המקום')) {
+    return 'מומלץ לכתוב יחד מספרים גדולים בטבלת מקום (אלפים | מאות | עשרות | אחדות) ולשאול "כמה מאות יש כאן?".';
+  }
+  if (topic.includes('סדר פעולות')) {
+    return 'מומלץ לחזור על הכלל "כפל וחילוק לפני חיבור וחיסור" ולסמן בעיגול את הכפל לפני שמחשבים.';
+  }
+  if (topic.includes('סימני התחלקות')) {
+    return 'מומלץ לתרגל את הכלל: מספר מתחלק ב-3 (או ב-9) אם סכום הספרות שלו מתחלק ב-3 (או ב-9).';
+  }
+  if (topic.includes('מלבן')) {
+    return 'מומלץ למדוד יחד שולחן או ספר: היקף = מסביב (מחברים את כל הצלעות), שטח = כמה ריבועים מכסים (אורך × רוחב).';
+  }
+  if (topic.includes('שבר מכמות')) {
+    return 'מומלץ לחלק ממתקים לקבוצות שוות: "רבע מ-12" = מחלקים ל-4 קבוצות ולוקחים קבוצה אחת.';
+  }
+  if (/Reading|Letter Sounds|Missing Letter/.test(topic)) {
+    return 'מומלץ לקרוא יחד ספרוני תמונות קצרים באנגלית ולהצביע על כל מילה תוך כדי קריאה.';
   }
   if (topic.includes('הברות')) {
     return 'מומלץ למחוא כפיים יחד לכל הברה בשמות של בני המשפחה, חפצים ומאכלים (בַּ–לּוֹן = 2 מחיאות).';

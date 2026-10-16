@@ -1,5 +1,5 @@
 // Service Worker for 100% offline capability
-const CACHE_NAME = 'edu-learning-app-v18';
+const CACHE_NAME = 'edu-learning-app-v30';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -23,6 +23,15 @@ const ASSETS_TO_CACHE = [
   './public/coins/shekel5.png',
   './public/coins/shekel10.png',
   './src/data/index.js',
+  './src/data/grades.js',
+  './src/data/grades/roundUtils.js',
+  './src/data/grades/math3.js',
+  './src/data/grades/math4.js',
+  './src/data/grades/english3.js',
+  './src/data/grades/hebrew1.js',
+  './src/data/grades/math1.js',
+  './src/engine/grade1_math.js',
+  './src/components/gradeChoiceModal.js',
   './src/data/age5/hebrew.js',
   './src/data/age5/math.js',
   './src/data/age5/english.js',

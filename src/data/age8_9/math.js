@@ -1,11 +1,10 @@
-// Age 8-9 Math Curriculum: Israeli Ministry of Education (Grades 3-4)
-// Times tables (לוח הכפל), Word problems (בעיות מילוליות), Simple fractions (שברים פשוטים)
-import { generateAge8Multiplication, generateAge8MissingFactor, generateAge8Division } from '../../engine/procedural_math.js';
+// Curated math items for grades 3-4 (word problems, fractions). Each item has a grade;
+// the rounds are built in src/data/grades/math3.js and math4.js.
 
 export const mathAge8_9CuratedExercises = [
   {
     id: 'math_8_word_1',
-    ageGroup: '8-9',
+    grade: '3',
     category: 'math',
     type: 'numeric_input',
     title: 'בעיה מילולית: חלוקה לקבוצות',
@@ -16,7 +15,7 @@ export const mathAge8_9CuratedExercises = [
   },
   {
     id: 'math_8_word_2',
-    ageGroup: '8-9',
+    grade: '3',
     category: 'math',
     type: 'numeric_input',
     title: 'בעיה מילולית דו-שלבית',
@@ -27,7 +26,7 @@ export const mathAge8_9CuratedExercises = [
   },
   {
     id: 'math_8_frac_1',
-    ageGroup: '8-9',
+    grade: '4', // the new math program (grade 3 from תשפ"ז) starts fractions only in grade 4
     category: 'math',
     type: 'image_word_match',
     showOptionLabels: true,
@@ -43,7 +42,7 @@ export const mathAge8_9CuratedExercises = [
   },
   {
     id: 'math_8_frac_compare',
-    ageGroup: '8-9',
+    grade: '4',
     category: 'math',
     type: 'image_word_match',
     showOptionLabels: true,
@@ -59,7 +58,7 @@ export const mathAge8_9CuratedExercises = [
   },
   {
     id: 'math_8_word_saving',
-    ageGroup: '8-9',
+    grade: '3',
     category: 'math',
     type: 'numeric_input',
     title: 'חישוב כספי',
@@ -69,29 +68,3 @@ export const mathAge8_9CuratedExercises = [
     expectedAnswer: 25
   }
 ];
-
-// A round mixes all 5 curated items (word problems, fractions) with generated drills
-// (multiplication, missing factor, division, in rotation). No formula repeats within a round.
-export function getMathAge8Exercises(count = 20) {
-  const drills = [generateAge8Multiplication, generateAge8MissingFactor, generateAge8Division];
-  const curated = mathAge8_9CuratedExercises.slice(0, count);
-  const drillCount = count - curated.length;
-
-  const usedFormulas = new Set();
-  const generated = [];
-  for (let i = 0; i < drillCount; i++) {
-    const generate = drills[i % drills.length];
-    let ex = generate();
-    for (let tries = 0; tries < 30 && usedFormulas.has(ex.formula); tries++) ex = generate();
-    usedFormulas.add(ex.formula);
-    generated.push(ex);
-  }
-
-  // Spread the curated items evenly between the drills
-  const round = [...generated];
-  curated.forEach((item, idx) => {
-    const position = Math.round(((idx + 1) * round.length) / (curated.length + 1)) + idx;
-    round.splice(position, 0, item);
-  });
-  return round;
-}

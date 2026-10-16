@@ -1,12 +1,14 @@
 // Header component with active profile, stars, parent report, audio settings
 import { storage } from '../storage.js';
 import { sfx } from '../audio/sfx.js';
+import { gradeOfProfile, gradeLabel } from '../data/grades.js';
 
 export function renderHeader(container, onOpenProfileModal, onOpenParentModal) {
   const profile = storage.getActiveProfile();
   const settings = storage.getSettings();
 
-  const ageLabel = profile.ageGroup === '5' ? 'גן חובה (גיל 5)' : 'כיתה ג\'-ד\' (גיל 8-9)';
+  const grade = gradeOfProfile(profile);
+  const ageLabel = grade ? gradeLabel(grade) : 'יש לבחור כיתה';
 
   container.innerHTML = `
     <header class="w-full bg-white/95 backdrop-blur-md border-b-4 border-indigo-100 shadow-sm sticky top-0 z-30">

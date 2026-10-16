@@ -14,7 +14,7 @@ export const HEBREW_VOCABULARY_BANK = [
   { word: 'צָב', sound: 'צָב', letter: 'צ', emoji: '🐢', syllables: ['צָב'] },
   { word: 'דְּבוֹרָה', sound: 'דְּבוֹרָה', letter: 'ד', emoji: '🐝', syllables: null },
   { word: 'פִּיל', sound: 'פִּיל', letter: 'פ', emoji: '🐘', syllables: ['פִּיל'] },
-  { word: 'אֲרְיֵה', sound: 'אֲרְיֵה', letter: 'א', emoji: '🦁', syllables: null },
+  { word: 'אַרְיֵה', sound: 'אַרְיֵה', letter: 'א', emoji: '🦁', syllables: ['אַרְ', 'יֵה'] },
   { word: 'צִפּוֹר', sound: 'צִפּוֹר', letter: 'צ', emoji: '🐦', syllables: ['צִ', 'פּוֹר'] },
   { word: 'צְפַרְדֵּעַ', sound: 'צְפַרְדֵּעַ', letter: 'צ', emoji: '🐸', syllables: null },
   { word: 'דֹּב', sound: 'דֹּב', letter: 'ד', emoji: '🐻', syllables: ['דֹּב'] },

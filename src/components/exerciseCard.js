@@ -2,6 +2,7 @@
 import { validateAnswer } from '../engine/validator.js';
 import { sfx } from '../audio/sfx.js';
 import { speech } from '../audio/speech.js';
+import { gradeLabel } from '../data/grades.js';
 
 export function renderExerciseCard(container, exercise, onComplete) {
   let hasAnswered = false;
@@ -20,9 +21,10 @@ export function renderExerciseCard(container, exercise, onComplete) {
           <!-- Big Target Word Banner with Audio button -->
           <div class="flex items-center gap-4 bg-amber-50 border-4 border-amber-300 px-8 py-4 rounded-3xl shadow-sm">
             <span class="vocalized-text text-amber-950 font-black tracking-wide">${exercise.targetWordVocalized || ''}</span>
+            ${exercise.hideWordAudio ? '' /* reading questions: hearing the word would give the answer away */ : `
             <button id="btn-speak-word" class="p-3 bg-white hover:bg-amber-100 active:scale-95 border-2 border-amber-200 rounded-2xl shadow-sm text-2xl transition-all cursor-pointer" title="האזנה">
               🔊
-            </button>
+            </button>`}
           </div>
 
           <!-- Options Grid -->
@@ -31,8 +33,12 @@ export function renderExerciseCard(container, exercise, onComplete) {
               <button 
                 data-id="${opt.id}" 
                 class="option-card choice-pill btn-tactile p-6 sm:p-8 flex flex-col items-center justify-center gap-2 text-center border-3 cursor-pointer">
-                <span class="text-7xl sm:text-8xl filter drop-shadow-md transition-transform hover:scale-110">${opt.emoji}</span>
-                ${(exercise.showOptionLabels && opt.label) ? `<span class="text-xl font-black text-slate-800 mt-1">${opt.label}</span>` : ''}
+                ${opt.emoji ? `<span class="text-7xl sm:text-8xl filter drop-shadow-md transition-transform hover:scale-110">${opt.emoji}</span>` : ''}
+                ${(exercise.showOptionLabels && opt.label)
+                  // Text-only answers (no picture) are shown large, so reading the word is the task
+                  // bigLabels: early-reading questions (syllables with niqqud) need large text
+                  ? `<span class="${opt.emoji ? 'text-xl mt-1' : (exercise.bigLabels ? 'text-5xl sm:text-6xl py-2 leading-relaxed' : 'text-2xl sm:text-3xl py-4')} font-black text-slate-800">${opt.label}</span>`
+                  : ''}
               </button>
             `).join('')}
           </div>
@@ -141,7 +147,8 @@ export function renderExerciseCard(container, exercise, onComplete) {
         <div class="flex flex-col items-center gap-6 my-4">
           <!-- Big Formula Display Banner -->
           <div class="flex items-center gap-4 bg-indigo-50 border-4 border-indigo-200 px-8 py-5 rounded-3xl shadow-sm">
-            <span class="text-4xl sm:text-5xl font-black text-indigo-950 tracking-wide">${exercise.formula}</span>
+            <!-- Math is written left-to-right in Israeli textbooks, also inside a Hebrew (RTL) page -->
+            <span dir="ltr" class="text-4xl sm:text-5xl font-black text-indigo-950 tracking-wide">${exercise.formula}</span>
             <button id="btn-speak-word" class="p-3 bg-white hover:bg-indigo-100 active:scale-95 border-2 border-indigo-200 rounded-2xl shadow-sm text-2xl transition-all cursor-pointer" title="האזנה">
               🔊
             </button>
@@ -358,9 +365,10 @@ export function renderExerciseCard(container, exercise, onComplete) {
       <div class="flex items-center justify-between border-b pb-3 mb-3">
         <div class="flex items-center gap-2">
           <span class="text-xs bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-xl font-black">${exercise.title}</span>
+          ${exercise.isChallenge ? `<span class="text-xs bg-amber-400 text-amber-950 px-2.5 py-1 rounded-xl font-black shadow-sm" dir="rtl" title="שאלה מהכיתה הבאה — בונוס כוכב!">⭐ אתגר</span>` : ''}
         </div>
-        <div class="text-xs font-bold text-slate-400">
-          ${exercise.ageGroup === '5' ? 'גן חובה' : 'כיתה ג\'-ד\''}
+        <div class="text-xs font-bold text-slate-400" dir="rtl">
+          ${gradeLabel(exercise.grade || (exercise.ageGroup === '5' ? 'gan' : '4'))}
         </div>
       </div>
 
@@ -502,7 +510,8 @@ export function renderExerciseCard(container, exercise, onComplete) {
     if (validationResult.isCorrect) {
       sfx.playSuccess();
       feedbackBanner.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
-      feedbackBanner.innerHTML = `🎉 ${validationResult.feedback}${translationHtml}`;
+      const challengeNote = exercise.isChallenge ? `<div class="mt-1">⭐ פתרת שאלת אתגר — קיבלת כוכב בונוס!</div>` : '';
+      feedbackBanner.innerHTML = `🎉 ${validationResult.feedback}${challengeNote}${translationHtml}`;
       nextBtnContainer.classList.remove('hidden');
       nextBtn.innerHTML = `התרגיל הבא! 🌟`;
 
@@ -534,7 +543,7 @@ export function renderExerciseCard(container, exercise, onComplete) {
       // ON ERROR: Play error sound, highlight wrong answer in red, show correct answer in green, and move to next question!
       sfx.playError();
       feedbackBanner.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-800');
-      feedbackBanner.innerHTML = `❌ לא מדויק. התשובה הנכונה סומנה בירוק. ממשיכים הלאה! 💪${translationHtml}`;
+      feedbackBanner.innerHTML = `❌ לא מדויק. התשובה הנכונה סומנה בירוק. ממשיכים הלאה! 💪${exercise.isChallenge ? `<div class="mt-1">⭐ זו הייתה שאלת אתגר מהכיתה הבאה — כל הכבוד על הניסיון!</div>` : ''}${translationHtml}`;
       nextBtnContainer.classList.remove('hidden');
       nextBtn.innerHTML = `התרגיל הבא! ➡️`;
 

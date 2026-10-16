@@ -21,9 +21,9 @@ export const englishAge8_9Exercises = [
     soundCue: 'The children are playing in the park.',
     lang: 'en-US',
     options: [
-      { id: 'park', label: 'park 🌳' },
-      { id: 'pencil', label: 'pencil ✏️' },
-      { id: 'pizza', label: 'pizza 🍕' }
+      { id: 'park', label: 'park' },
+      { id: 'pencil', label: 'pencil' },
+      { id: 'pizza', label: 'pizza' }
     ]
   },
   {
@@ -80,10 +80,10 @@ export const englishAge8_9Exercises = [
     lang: 'en-US',
     correctOptionId: 'dog',
     options: [
-      { id: 'apple', emoji: '🍎', label: 'Apple' },
-      { id: 'banana', emoji: '🍌', label: 'Banana' },
-      { id: 'dog', emoji: '🐶', label: 'Dog' },
-      { id: 'orange', emoji: '🍊', label: 'Orange' }
+      { id: 'apple', label: 'Apple' },
+      { id: 'banana', label: 'Banana' },
+      { id: 'dog', label: 'Dog' },
+      { id: 'orange', label: 'Orange' }
     ]
   },
   {
@@ -100,10 +100,10 @@ export const englishAge8_9Exercises = [
     lang: 'en-US',
     correctOptionId: 'book',
     options: [
-      { id: 'car', emoji: '🚗', label: 'Car' },
-      { id: 'bus', emoji: '🚌', label: 'Bus' },
-      { id: 'plane', emoji: '✈️', label: 'Plane' },
-      { id: 'book', emoji: '📖', label: 'Book' }
+      { id: 'car', label: 'Car' },
+      { id: 'bus', label: 'Bus' },
+      { id: 'plane', label: 'Plane' },
+      { id: 'book', label: 'Book' }
     ]
   },
   {
@@ -120,10 +120,10 @@ export const englishAge8_9Exercises = [
     lang: 'en-US',
     correctOptionId: 'pizza',
     options: [
-      { id: 'chair', emoji: '🪑', label: 'Chair' },
-      { id: 'table', emoji: '🪵', label: 'Table' },
-      { id: 'pizza', emoji: '🍕', label: 'Pizza' },
-      { id: 'bed', emoji: '🛏️', label: 'Bed' }
+      { id: 'chair', label: 'Chair' },
+      { id: 'table', label: 'Table' },
+      { id: 'pizza', label: 'Pizza' },
+      { id: 'bed', label: 'Bed' }
     ]
   },
 
@@ -141,10 +141,11 @@ export const englishAge8_9Exercises = [
     soundCue: 'What is the opposite of big?',
     lang: 'en-US',
     correctOptionId: 'small',
+    feedbackNote: 'Small = קטן',
     options: [
-      { id: 'small', emoji: '🐭', label: 'Small (קטן)' },
-      { id: 'tall', emoji: '🦒', label: 'Tall (גבוה)' },
-      { id: 'blue', emoji: '🔵', label: 'Blue (כחול)' }
+      { id: 'small', label: 'Small' },
+      { id: 'tall', label: 'Tall' },
+      { id: 'blue', label: 'Blue' }
     ]
   },
   {
@@ -160,10 +161,11 @@ export const englishAge8_9Exercises = [
     soundCue: 'What is the opposite of hot?',
     lang: 'en-US',
     correctOptionId: 'cold',
+    feedbackNote: 'Cold = קר',
     options: [
-      { id: 'cold', emoji: '🧊', label: 'Cold (קר)' },
-      { id: 'warm', emoji: '☀️', label: 'Warm (חמים)' },
-      { id: 'red', emoji: '🔴', label: 'Red (אדום)' }
+      { id: 'cold', label: 'Cold' },
+      { id: 'warm', label: 'Warm' },
+      { id: 'red', label: 'Red' }
     ]
   },
   {
@@ -179,10 +181,11 @@ export const englishAge8_9Exercises = [
     soundCue: 'What is the opposite of happy?',
     lang: 'en-US',
     correctOptionId: 'sad',
+    feedbackNote: 'Sad = עצוב',
     options: [
-      { id: 'sad', emoji: '😢', label: 'Sad (עצוב)' },
-      { id: 'fast', emoji: '🏃', label: 'Fast (מהיר)' },
-      { id: 'funny', emoji: '🤡', label: 'Funny (מצחיק)' }
+      { id: 'sad', label: 'Sad' },
+      { id: 'fast', label: 'Fast' },
+      { id: 'funny', label: 'Funny' }
     ]
   },
   {
@@ -198,10 +201,11 @@ export const englishAge8_9Exercises = [
     soundCue: 'What is the opposite of fast?',
     lang: 'en-US',
     correctOptionId: 'slow',
+    feedbackNote: 'Slow = איטי',
     options: [
-      { id: 'slow', emoji: '🐢', label: 'Slow (איטי)' },
-      { id: 'loud', emoji: '📢', label: 'Loud (רועש)' },
-      { id: 'green', emoji: '🟢', label: 'Green (ירוק)' }
+      { id: 'slow', label: 'Slow' },
+      { id: 'loud', label: 'Loud' },
+      { id: 'green', label: 'Green' }
     ]
   },
 
@@ -220,9 +224,9 @@ export const englishAge8_9Exercises = [
     lang: 'en-US',
     correctOptionId: 'ans_age',
     options: [
-      { id: 'ans_age', emoji: '🎂', label: 'I am 9 years old.' },
-      { id: 'ans_name', emoji: '🏷️', label: 'My name is Dan.' },
-      { id: 'ans_like', emoji: '🍕', label: 'I like pizza.' }
+      { id: 'ans_age', label: 'I am 9 years old.' },
+      { id: 'ans_name', label: 'My name is Dan.' },
+      { id: 'ans_like', label: 'I like pizza.' }
     ]
   },
   {
@@ -239,9 +243,9 @@ export const englishAge8_9Exercises = [
     lang: 'en-US',
     correctOptionId: 'ans_city',
     options: [
-      { id: 'ans_city', emoji: '🏙️', label: 'I live in Haifa.' },
-      { id: 'ans_time', emoji: '⏰', label: 'It is 8 o\'clock.' },
-      { id: 'ans_color', emoji: '🎨', label: 'Blue and green.' }
+      { id: 'ans_city', label: 'I live in Haifa.' },
+      { id: 'ans_time', label: 'It is 8 o\'clock.' },
+      { id: 'ans_color', label: 'Blue and green.' }
     ]
   },
   {
@@ -258,9 +262,9 @@ export const englishAge8_9Exercises = [
     lang: 'en-US',
     correctOptionId: 'ans_can',
     options: [
-      { id: 'ans_can', emoji: '🏊', label: 'Yes, I can!' },
-      { id: 'ans_no', emoji: '🌧️', label: 'It is raining.' },
-      { id: 'ans_apple', emoji: '🍎', label: 'Two apples.' }
+      { id: 'ans_can', label: 'Yes, I can!' },
+      { id: 'ans_no', label: 'It is raining.' },
+      { id: 'ans_apple', label: 'Two apples.' }
     ]
   }
 ];
