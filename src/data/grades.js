@@ -16,6 +16,7 @@ const GRADE_LABELS = {
 export const SELECTABLE_GRADES = [
   { key: 'gan', label: 'גן חובה', emoji: '🧒', hint: 'גיל 5' },
   { key: '1', label: "כיתה א'", emoji: '🎒', hint: 'גיל 6–7' },
+  { key: '2', label: "כיתה ב'", emoji: '✏️', hint: 'גיל 7–8' },
   { key: '3', label: "כיתה ג'", emoji: '🧑', hint: 'גיל 8–9' },
   { key: '4', label: "כיתה ד'", emoji: '🧑‍🎓', hint: 'גיל 9–10' }
 ];

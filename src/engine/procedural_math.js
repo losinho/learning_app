@@ -371,7 +371,7 @@ export function generateGrade3DivisionWithRemainder() {
 const PLACE_NAMES = ['אחדות', 'עשרות', 'מאות', 'אלפים', 'עשרות אלפים', 'מאות אלפים'];
 
 // Place value: "מהי ספרת המאות במספר 4,382?" — grade 3 up to 10,000, grade 4 up to 1,000,000
-function placeValue(digits, idPrefix) {
+export function placeValue(digits, idPrefix) {
   const number = randInt(10 ** (digits - 1), 10 ** digits - 1);
   const place = randInt(0, digits - 1);
   const digitAt = (n, p) => Math.floor(n / 10 ** p) % 10;

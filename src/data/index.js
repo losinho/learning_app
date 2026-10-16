@@ -16,6 +16,8 @@ import { getMathGrade4Exercises } from './grades/math4.js';
 import { getEnglishGrade3Exercises } from './grades/english3.js';
 import { getHebrewGrade1Exercises } from './grades/hebrew1.js';
 import { getMathGrade1Exercises } from './grades/math1.js';
+import { getHebrewGrade2Exercises } from './grades/hebrew2.js';
+import { getMathGrade2Exercises } from './grades/math2.js';
 import { spreadInto } from './grades/roundUtils.js';
 import { gradeOfProfile, nextGrade, previousGrade } from './grades.js';
 
@@ -57,18 +59,20 @@ const SOURCES = {
   hebrew: [
     { grades: ['gan'], build: (n) => getHebrewAge5Exercises(n) },
     { grades: ['1'], build: (n) => getHebrewGrade1Exercises(n) },
+    { grades: ['2'], build: (n) => getHebrewGrade2Exercises(n) },
     { grades: ['3', '4'], build: (n) => hebrewGrades3And4(n) }
   ],
   math: [
     { grades: ['gan'], build: (n) => getMathAge5Exercises(n) },
     { grades: ['1'], build: (n) => getMathGrade1Exercises(n) },
+    { grades: ['2'], build: (n) => getMathGrade2Exercises(n) },
     { grades: ['3'], build: (n) => getMathGrade3Exercises(n) },
     { grades: ['4'], build: (n) => getMathGrade4Exercises(n) }
   ],
   english: [
-    // Gan and grade 1 (no official English before grade 3): mixed topics by default; the child can pick one topic
-    // and turn on listen-only (saved per profile)
-    { grades: ['gan', '1'], build: (n, profile) => getEnglishAge5Exercises(n, profile?.englishTopic || null, { listenOnly: Boolean(profile?.englishListenOnly) }) },
+    // Gan, grade 1 and grade 2 (no official English before grade 3): mixed topics by default; the child can pick
+    // one topic and turn on listen-only (saved per profile)
+    { grades: ['gan', '1', '2'], build: (n, profile) => getEnglishAge5Exercises(n, profile?.englishTopic || null, { listenOnly: Boolean(profile?.englishListenOnly) }) },
     { grades: ['3'], build: (n) => getEnglishGrade3Exercises(n) },
     { grades: ['4'], build: (n) => shuffled(englishAge8_9Exercises).slice(0, n) }
   ]

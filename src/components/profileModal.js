@@ -68,7 +68,7 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
             <!-- Grade selection -->
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">כיתה / שלב לימוד:</label>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 ${SELECTABLE_GRADES.map((g, i) => `
                   <button type="button" class="age-select-btn p-2 rounded-xl border-2 font-bold text-xs sm:text-sm text-center transition-all ${i === 0 ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}" data-grade="${g.key}">
                     ${g.emoji} ${g.label}<br><span class="text-[11px] font-semibold opacity-80">${g.hint}</span>

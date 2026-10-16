@@ -13,7 +13,7 @@ An offline-first, installable web app (PWA) for Israeli children to practice **H
 |---|---|
 | Users | Children (primary), parents (secondary – progress report) |
 | UI language | Hebrew, RTL. English exercise cards are LTR. |
-| Grades | `gan` — גן חובה (kindergarten, age 5–6) · `1` — כיתה א׳ · `3` — כיתה ג׳ · `4` — כיתה ד׳ (with next-grade challenges, §3.3). Grade 2 is planned (§8.3a). |
+| Grades | `gan` — גן חובה (kindergarten, age 5–6) · `1` — כיתה א׳ · `2` — כיתה ב׳ · `3` — כיתה ג׳ · `4` — כיתה ד׳ (with next-grade challenges and review, §3.3) |
 | Platforms | Any modern browser; installable on Android/iOS as PWA; optional Capacitor APK |
 | Backend | None. No accounts, no server, no network calls at runtime (except TTS fallback, §7.2) |
 
@@ -99,6 +99,24 @@ Round composition (20 questions, `ROUND_SIZE` in `src/data/index.js`; the same q
 | English | (age-5 English) | | Reused for grade 1, including the topic picker and listen-only (no official English before grade 3). |
 
 Text answers of early-reading questions are shown extra large (`bigLabels`). Files: `src/data/grades/hebrew1.js`, `src/data/grades/math1.js`, `src/engine/grade1_math.js`.
+### 3.1b Grade 2 — כיתה ב׳ (built 2026-10-16)
+
+| Subject | Topic (card title) | Exercise type | Details |
+|---|---|---|---|
+| Hebrew | כתיב נכון | `image_word_match` (text answers) | Picture + spoken word → which spelling is correct? Wrong answers swap ONE letter for a same-sounding letter (ת/ט, כּ/ק, ח/כ, ס/שׂ, א/ע); never another bank word; a כ is never put at the end of a word (it would have to be ך). |
+| Hebrew | הבנת הנקרא | `reading_comprehension_question` | 3 short niqqud stories (הַכֶּלֶב שֶׁל נֹעָה, יוֹם גֶּשֶׁם, הַצָּב וְהָאַרְנָב) × 3 questions; 6 per round. |
+| Hebrew | יחיד ורבים | `image_word_match` (text answers) | Singular → which plural is correct (סְפָרִים / סְפָרוֹת / סֵפֶרוֹת); wrong answers use the other ending or the "regular" ending on the singular (final letters turned into regular letters). |
+| Hebrew | משפחת מילים | `image_word_match` (text answers) | Which word shares the root (כָּתַב → מִכְתָּב)? 9 families of 3 words. |
+| Math | ערך המקום | `arithmetic_choice` | Numbers up to 1,000. |
+| Math | השוואת מספרים | `arithmetic_choice` | Up to 1,000 **with < > =** (symbols start in grade 2); 20% equal, often the same digits reordered. |
+| Math | חיבור וחיסור עד 100 | `arithmetic_choice` | Often with carrying/borrowing; ±10 (the carrying mistake) is a typical wrong option. |
+| Math | עובדות הכפל / החילוק | `arithmetic_choice` | ×2, ×4, ×5, ×10 facts and the matching divisions. |
+| Math | כפל כקבוצות שוות | `arithmetic_choice` | Picture of 2–5 equal groups → total (adding instead of multiplying is a typical wrong option). |
+| Math | חצי | `arithmetic_choice` | Half of an even number up to 50 (linked to ÷ 2). |
+| Math | מה השעה? | `arithmetic_choice` | Analog clock in whole and half hours; wrong options include reading the hour hand as the next hour. |
+| English | (age-5 English) | | Reused for grade 2, with the topic picker and listen-only. |
+
+Large reading answers scale with word length and never wrap (a broken word would look like a different spelling). Files: `src/data/grades/hebrew2.js`, `src/data/grades/math2.js`, `src/engine/grade2_math.js`.
 ### 3.2 Grades 3 and 4 — כיתה ג׳ / כיתה ד׳
 
 | Grade | Subject | Topic | Exercise type | Source | Details |
@@ -125,7 +143,7 @@ Math formulas are shown left-to-right (as in Israeli textbooks) even though the 
 
 - **Registry:** `src/data/index.js` lists, per subject, content sources and the grades each serves (`gan`, `3`, `4`; Hebrew 3–4 is one shared pool because the Ministry sets those goals "by the end of grade 4"). Grade order and labels: `src/data/grades.js`.
 - **A round** (`ROUND_SIZE` = 20) = **core** questions from the child's grade + **challenge** questions from the next grade + **2 review** questions from the previous grade — each only when that grade has its own content. Challenges are spread through the round; review comes first as a warm-up. Every exercise gets `grade`, and `isChallenge` / `isReview` when relevant.
-- **Today:** gan gets grade-1 challenges in Hebrew and math (English is shared by gan and grade 1, so no English challenges); grade 1 gets 2 gan review questions in Hebrew and math (no grade-2 content yet, so no challenges); grade 3 gets grade-4 challenges in math and English (no grade-2 content, so no review); grade 4 gets 2 grade-3 review questions in math and English (no grade-5 content yet, so no challenges). Grade 3/4 Hebrew rounds are the shared 17 items. Grade-4 English rounds are 15 (13 + 2 review).
+- **Today:** gan → grade-1 challenges (Hebrew, math); grade 1 → grade-2 challenges (Hebrew, math) and gan review; grade 2 → grade-3 challenges (Hebrew, math, English) and grade-1 review (Hebrew, math); grade 3 → grade-4 challenges (math, English) and grade-2 review (Hebrew, math, English); grade 4 → grade-3 review (math, English), no challenges yet (no grade 5). English for gan–grade 2 is one shared pool, so it has no challenges/review between those grades. Grade 3/4 Hebrew rounds are the shared 17 items (+2 review for grade 3 → 19).
 - **Challenge share** per child (`challengeMode` on the profile, set in the parent report): `off` 0%, `some` 20%, `many` 40%, `auto` (default) — 20% to start; based on the last 10 challenge answers in that subject (from 5 answers on): ≥90% correct → 40%, ≥75% → 30%, <50% → 10%.
 - **For the child:** a "⭐ אתגר" badge on the card and the next grade's label; a solved challenge gives a bonus star; a missed one gets an encouraging message.
 - **For the parent:** missed challenges are **not** counted as "תחומים לחיזוק"; the report shows "challenges solved X of Y" and the challenge level buttons, and says which subjects currently have challenges.
@@ -331,7 +349,7 @@ Because there is no gan curriculum for English, the right approach is listening 
 | Alphabet and phonics for grade 3 | ❌ No letter or phonics tasks for age 8–9 |
 | Vocabulary taken from the official Pre Band I / Band I lists | ❌ Not checked against the Excel lists yet |
 
-### 8.3a Grades 1–2 — verified 2026-10-16 (grade 1 built 2026-10-16, see §3.1a; grade 2 not built yet)
+### 8.3a Grades 1–2 — verified 2026-10-16 (both built 2026-10-16, see §3.1a and §3.1b)
 
 **Math (new program, grade 1 / grade 2 documents):**
 | Grade | Official topics (hours) | What the app would add |
@@ -389,7 +407,7 @@ Because there is no gan curriculum for English, the right approach is listening 
 2. Math: division with remainder, place value, order of operations, more two-step problems, fractions (numerator and denominator, equivalents), angles, shapes, area and perimeter, units.
 3. Hebrew: singular/plural/dual, gender and number agreement, number words (שלושה / שלוש), סמיכות, main-idea questions, a short poem with comprehension questions.
 4. English: check the word lists against the official Pre Band I / Band I Excel; add alphabet and phonics for grade 3.
-5. Add grade 2 following §8.3a (Hebrew fluent reading + spelling of same-sound letters; math to 1,000, within 100, ×2/×4/×5/×10, clock with half hours) — it also gives grade-1 children challenges and grade-3 children review. ~~Grade 1~~ (done 2026-10-16). English reuses age 5. Then grade 5 (challenges for grade 4). ~~Split grade 3 / grade 4~~ (done 2026-10-15).
+5. Add grade 5 (would give grade-4 children challenges). ~~Grade 1~~, ~~grade 2~~ (done 2026-10-16).
 6. Grade 3 under the new math program: add area measurement (cm², m², grids); fractions stay in grade 4 (the ¼ item was moved there 2026-10-16).
 
 **Platform**
@@ -408,6 +426,7 @@ Because there is no gan curriculum for English, the right approach is listening 
 - Hebrew read-aloud fixed (no-referrer for the Google fallback) and long passages read in full (chunked).
 - Service worker re-caches with `cache: 'reload'`, so updates reach installed devices.
 - Age 5 completed: singular/plural, final sound, counting to 20 in rows of 5, subtraction, ordinal numbers, spatial words, drawn solids (cone, pyramid, prism…), English topics Actions/Feelings/Greetings, English topic picker and listen-only mode.
+- Grade 2 (2026-10-16): Hebrew spelling of same-sound letters, 3 short stories with questions, written plurals, word families; math to 1,000 with < > =, ±100, ×2/×4/×5/×10 facts, groups, half, half-hour clock; English reused from age 5.
 - Grade 1 (2026-10-16): Hebrew decoding with niqqud (first syllable, same-sound vowels, reading words/sentences without audio, reading carefully), math (sequences, comparing in words, ±20, tens, clock, length), English reused from age 5. Word-bank fix: אֲרְיֵה → אַרְיֵה. The app reloads itself once when a new version is downloaded.
 - Grades 3 and 4 split with next-grade challenges and review (§3.3): grade-3 English (Pre-A1), grade-3 math (remainders, place value, order of operations), grade-4 math (long × and ÷, place value to a million, divisibility, area/perimeter, fractions); math formulas shown left-to-right.
 - Product decisions recorded in §8.4 (age 5 keeps its difficulty, 20-question rounds, coins).

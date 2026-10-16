@@ -149,9 +149,9 @@ class LearningApp {
 
     this.exerciseMount.innerHTML = `<div id="topic-picker-mount"></div>` + progressHeader + `<div id="card-inner-mount"></div>`;
 
-    // Gan / grade 1 English: topic picker + listen-only toggle above the exercise
+    // Gan / grade 1-2 English: topic picker + listen-only toggle above the exercise
     const profile = storage.getActiveProfile();
-    if (this.activeSubject === 'english' && ['gan', '1'].includes(gradeOfProfile(profile))) {
+    if (this.activeSubject === 'english' && ['gan', '1', '2'].includes(gradeOfProfile(profile))) {
       renderEnglishTopicPicker(this.exerciseMount.querySelector('#topic-picker-mount'), profile, (choice) => {
         if (profile) storage.updateProfile(profile.id, choice);
         // A new choice starts a new round (like switching subject)

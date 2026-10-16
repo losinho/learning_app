@@ -4,6 +4,15 @@ import { sfx } from '../audio/sfx.js';
 import { speech } from '../audio/speech.js';
 import { gradeLabel } from '../data/grades.js';
 
+// Text size for large reading answers: syllables very large, long words smaller so they fit the button
+function bigLabelClass(label) {
+  const letters = String(label).replace(/[֑-ׇ\s]/g, '').length;
+  if (letters <= 3) return 'text-5xl sm:text-6xl py-2 leading-relaxed';
+  if (letters <= 5) return 'text-4xl sm:text-5xl py-2 leading-relaxed';
+  if (letters <= 7) return 'text-3xl sm:text-4xl py-3 leading-relaxed';
+  return 'text-2xl sm:text-3xl py-3 leading-relaxed';
+}
+
 export function renderExerciseCard(container, exercise, onComplete) {
   let hasAnswered = false;
   let enteredNumber = '';
@@ -32,12 +41,13 @@ export function renderExerciseCard(container, exercise, onComplete) {
             ${exercise.options.map(opt => `
               <button 
                 data-id="${opt.id}" 
-                class="option-card choice-pill btn-tactile p-6 sm:p-8 flex flex-col items-center justify-center gap-2 text-center border-3 cursor-pointer">
+                class="option-card choice-pill btn-tactile ${opt.emoji ? 'p-6 sm:p-8' : 'px-2 py-4 sm:px-3'} flex flex-col items-center justify-center gap-2 text-center border-3 cursor-pointer">
                 ${opt.emoji ? `<span class="text-7xl sm:text-8xl filter drop-shadow-md transition-transform hover:scale-110">${opt.emoji}</span>` : ''}
                 ${(exercise.showOptionLabels && opt.label)
                   // Text-only answers (no picture) are shown large, so reading the word is the task
-                  // bigLabels: early-reading questions (syllables with niqqud) need large text
-                  ? `<span class="${opt.emoji ? 'text-xl mt-1' : (exercise.bigLabels ? 'text-5xl sm:text-6xl py-2 leading-relaxed' : 'text-2xl sm:text-3xl py-4')} font-black text-slate-800">${opt.label}</span>`
+                  // bigLabels: early-reading questions (niqqud) need large text — as large as the word's length allows;
+                  // single Hebrew words never wrap (a broken word would be a different spelling)
+                  ? `<span class="${opt.emoji ? 'text-xl mt-1' : (exercise.bigLabels ? bigLabelClass(opt.label) + ' whitespace-nowrap' : 'text-2xl sm:text-3xl py-4')} font-black text-slate-800">${opt.label}</span>`
                   : ''}
               </button>
             `).join('')}
