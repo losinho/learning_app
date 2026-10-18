@@ -194,7 +194,8 @@ function renderDashboard(container, profile, analytics, onClose) {
               ${[
                 { id: 'hebrew', label: 'עברית (שפה ואוריינות)', stats: subjectStats.hebrew, color: 'bg-orange-500' },
                 { id: 'math', label: 'חשבון (מתמטיקה)', stats: subjectStats.math, color: 'bg-blue-600' },
-                { id: 'english', label: 'English (אנגלית)', stats: subjectStats.english, color: 'bg-emerald-500' }
+                { id: 'english', label: 'English (אנגלית)', stats: subjectStats.english, color: 'bg-emerald-500' },
+                { id: 'russian', label: 'Русский (רוסית)', stats: subjectStats.russian, color: 'bg-rose-500' }
               ].map(sub => {
                 const acc = sub.stats.total > 0 ? Math.round((sub.stats.correct / sub.stats.total) * 100) : 0;
                 return `
@@ -231,7 +232,7 @@ function renderDashboard(container, profile, analytics, onClose) {
               <div class="space-y-2">
                 ${recentSessions.slice(0, 10).map((sess, idx) => {
                   const dateStr = new Date(sess.timestamp).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-                  const subLabel = sess.subject === 'hebrew' ? 'עברית 📖' : (sess.subject === 'math' ? 'חשבון 🔢' : 'אנגלית 🔤');
+                  const subLabel = { hebrew: 'עברית 📖', math: 'חשבון 🔢', english: 'אנגלית 🔤', russian: 'רוסית Аб' }[sess.subject] || sess.subject;
                   const acc = sess.totalQuestions > 0 ? Math.round((sess.correctCount / sess.totalQuestions) * 100) : 0;
                   return `
                     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
@@ -344,7 +345,7 @@ function renderChallengeSection(profile, challengeStats = { total: 0, correct: 0
   const subjects = grade ? challengeSubjectsFor(grade) : [];
   const mode = profile.challengeMode || 'auto';
   const current = CHALLENGE_MODES.find(m => m.mode === mode) || CHALLENGE_MODES[0];
-  const subjectNames = { hebrew: 'עברית', math: 'חשבון', english: 'אנגלית' };
+  const subjectNames = { hebrew: 'עברית', math: 'חשבון', english: 'אנגלית', russian: 'רוסית' };
   const nextLabel = gradeLabel(nextGrade(grade));
 
   const availability = subjects.length
@@ -391,6 +392,10 @@ function getPedagogicalTip(topic) {
   }
   if (topic.includes('שבר מכמות')) {
     return 'מומלץ לחלק ממתקים לקבוצות שוות: "רבע מ-12" = מחלקים ל-4 קבוצות ולוקחים קבוצה אחת.';
+  }
+  // Russian topics have a Cyrillic name in their title, e.g. 'פירות (Фрукты)'
+  if (/[\u0400-\u04FF]/.test(topic)) {
+    return 'מומלץ לדבר רוסית בבית בהזדמנויות יומיומיות (צבעים, אוכל, חיות) ולקרוא יחד ספרי תמונות ברוסית.';
   }
   if (/Reading|Letter Sounds|Missing Letter/.test(topic)) {
     return 'מומלץ לקרוא יחד ספרוני תמונות קצרים באנגלית ולהצביע על כל מילה תוך כדי קריאה.';

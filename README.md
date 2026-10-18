@@ -5,7 +5,7 @@
 ---
 
 ## 🌟 Overview
-**לומדים בכיף** is a self-contained, offline-first, child-friendly learning app designed to practice **Hebrew (עברית)**, **Mathematics (חשבון)**, and **English (אנגלית)**.
+**לומדים בכיף** is a self-contained, offline-first, child-friendly learning app designed to practice **Hebrew (עברית)**, **Mathematics (חשבון)**, **English (אנגלית)** and basic **Russian (רוסית)**.
 
 ### Core Principles:
 1. **100% Self-Contained (Deterministic):** All exercises evaluate answers instantly in the client code without any runtime API calls to LLMs or servers.
@@ -69,7 +69,7 @@ The 🔊 / 🔈 buttons read words, instructions and passages aloud. The app pic
 1. **A local Hebrew voice on the device** (best): works offline, starts instantly, and doesn't depend on any outside service.
 2. **Online fallback:** if the device has no Hebrew voice, the app streams audio from Google Translate's speech service. This needs internet, and it is an unofficial service that may stop working. **Offline + no local voice = no Hebrew sound.**
 
-English works the same way, but almost every device already has an English voice.
+English and Russian work the same way. Almost every device already has an English voice; for the **Russian** tab, install a Russian voice the same way as the Hebrew one below (choose Русский / Russian instead of Hebrew).
 
 ### Android (phones & tablets)
 Most Android devices already include Google's Hebrew voice. To check or install it:

@@ -1,4 +1,4 @@
-// Subject navigation tabs (Hebrew, Math, English)
+// Subject navigation tabs (Hebrew, Math, English, Russian)
 import { sfx } from '../audio/sfx.js';
 
 export function renderSubjectNav(container, activeSubject, onSubjectChange) {
@@ -26,12 +26,20 @@ export function renderSubjectNav(container, activeSubject, onSubjectChange) {
       emoji: '🔤',
       activeColor: 'bg-emerald-600 text-white border-emerald-700 shadow-emerald-200',
       idleColor: 'bg-white text-emerald-950 border-emerald-200 hover:bg-emerald-50'
+    },
+    {
+      id: 'russian',
+      label: 'Русский',
+      sublabel: 'רוסית',
+      emoji: 'Аб', // Cyrillic letters (the 🪆 emoji is missing on Windows 10)
+      activeColor: 'bg-rose-600 text-white border-rose-700 shadow-rose-200',
+      idleColor: 'bg-white text-rose-950 border-rose-200 hover:bg-rose-50'
     }
   ];
 
   container.innerHTML = `
     <nav class="max-w-4xl mx-auto px-4 pt-4 pb-2">
-      <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
+      <div class="grid grid-cols-4 gap-2 sm:gap-4">
         ${subjects.map(sub => {
           const isActive = sub.id === activeSubject;
           const colorClass = isActive ? sub.activeColor : sub.idleColor;

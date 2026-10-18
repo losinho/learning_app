@@ -205,7 +205,8 @@ class StorageService {
     const subjectStats = {
       hebrew: { total: 0, correct: 0 },
       math: { total: 0, correct: 0 },
-      english: { total: 0, correct: 0 }
+      english: { total: 0, correct: 0 },
+      russian: { total: 0, correct: 0 }
     };
 
     logs.forEach(session => {

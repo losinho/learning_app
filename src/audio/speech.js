@@ -123,7 +123,7 @@ class SpeechService {
   }
 
   speakAudioStream(text, lang, onEndCallback) {
-    const tl = lang.startsWith('he') ? 'he' : 'en';
+    const tl = lang.split('-')[0].toLowerCase(); // he / en / ru
     const chunks = this.splitForStream(text);
     const finish = () => {
       this.currentAudio = null;
@@ -183,6 +183,10 @@ class SpeechService {
 
   speakHebrew(text, onEnd = null) {
     this.speak(text, 'he-IL', 0.85, onEnd);
+  }
+
+  speakRussian(text, onEnd = null) {
+    this.speak(text, 'ru-RU', 0.85, onEnd);
   }
 
   speakEnglish(text, onEnd = null) {

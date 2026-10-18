@@ -17,7 +17,8 @@ export function renderExerciseCard(container, exercise, onComplete) {
   let hasAnswered = false;
   let enteredNumber = '';
 
-  const isRTL = exercise.category !== 'english';
+  // Foreign-language cards (English, Russian) are left-to-right and speak their own language
+  const isRTL = !['english', 'russian'].includes(exercise.category);
   const langDir = isRTL ? 'rtl' : 'ltr';
 
   // Build specific exercise body HTML
@@ -425,6 +426,8 @@ export function renderExerciseCard(container, exercise, onComplete) {
       const textToSpeak = exercise.soundCue || exercise.targetWordVocalized;
       if (exercise.category === 'english') {
         speech.speakEnglish(textToSpeak, onEnd);
+      } else if (exercise.category === 'russian') {
+        speech.speakRussian(textToSpeak, onEnd);
       } else {
         speech.speakHebrew(textToSpeak, onEnd);
       }
