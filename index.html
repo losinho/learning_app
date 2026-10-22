@@ -14,19 +14,8 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./public/icon.svg">
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Rubik', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
+  <!-- Tailwind CSS, pre-built into a local file so the app is styled offline (rebuild command: tailwind.config.js) -->
+  <link rel="stylesheet" href="./css/tailwind.css">
 
   <!-- App Custom Stylesheet -->
   <link rel="stylesheet" href="./css/app.css">

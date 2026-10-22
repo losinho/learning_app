@@ -229,7 +229,8 @@ sw.js       – cache-first service worker (bump CACHE_NAME on every release!). 
               appear on the first visit after a release (not the second)
 manifest.json – PWA manifest
 ```
-- Vanilla ES modules, no build step. Tailwind via CDN (**note:** the CDN script is not cached by the service worker, so styling depends on the first online load). **[Gap]**
+- Vanilla ES modules, no build step for JS. Tailwind is pre-built into `css/tailwind.css` (config: `tailwind.config.js`; rebuild after adding new classes — command in the README), so the app is styled offline. Google Fonts (Rubik/Fredoka) still load online; offline the system font is used.
+- Hosting: GitHub Pages, https://losinho.github.io/learning_app/ (`.nojekyll` serves files as-is). Android APK via PWABuilder (see README). Manifest has `id`, `lang: he`, `dir: rtl`, `scope`, `categories`.
 - Run locally: `python -m http.server 8080`.
 
 ---
@@ -420,7 +421,7 @@ Because there is no gan curriculum for English, the right approach is listening 
 
 **Platform**
 7. Russian: topic picker and listen-only (like age-5 English), more topics (actions, feelings), and checking the words with a Russian speaker.
-8. Parent PIN; data export/backup; stable ids for generated exercises; cache Tailwind locally for true offline use.
+8. Parent PIN; data export/backup; stable ids for generated exercises; bundle the fonts locally. ~~Cache Tailwind locally~~ (done 2026-10-22).
 9. Reduce dependence on the unofficial Google TTS fallback (e.g. pre-recorded audio for fixed words).
 
 **To check on real devices**

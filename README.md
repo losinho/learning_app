@@ -44,20 +44,38 @@ To run on an Android tablet or phone connected to the same Wi-Fi, open:
 
 ## 📱 How to Install on Android Devices
 
-### Option A: Progressive Web App (PWA) - Instant 1-Click Install
-1. Open Chrome on your Android phone or tablet.
-2. Navigate to `http://<YOUR_PC_IP>:8080`.
-3. Tap the **3 dots menu (⋮)** in Chrome and select **"Add to Home screen"** (or tap the **"Install app"** banner).
-4. The app icon will appear on your child's home screen and launch in full-screen mode like a native app, with 100% offline support!
+The app is published on GitHub Pages: **https://losinho.github.io/learning_app/** (repo → Settings → Pages → branch `main`, folder `/ (root)`). Every push to `main` updates it, and installed copies pick up the new version automatically.
 
-### Option B: Package as Native APK (Capacitor)
-If you wish to distribute an `.apk` file:
+> Installing and offline mode need **https**. Opening `http://<YOUR_PC_IP>:8080` on a phone works for a quick look, but Android will not install it or keep it offline.
+
+### Option A: Install from Chrome (PWA) — no APK needed
+1. Open **https://losinho.github.io/learning_app/** in Chrome on the phone or tablet.
+2. Tap the **3 dots menu (⋮)** → **"Add to Home screen" / "Install app"**.
+3. The app opens full-screen from its own icon and works offline.
+
+### Option B: APK file with PWABuilder (no Android Studio needed)
+1. Go to **https://www.pwabuilder.com** and enter `https://losinho.github.io/learning_app/`.
+2. Choose **Package for stores → Android** and download the zip.
+3. The zip contains:
+   - an **`.apk`** to install directly on a device (allow "install unknown apps" for the browser/file manager you open it with),
+   - an **`.aab`** for uploading to the Google Play Store,
+   - a **signing key** — keep it safe; every future update of the app must be signed with the same key.
+4. The APK shows the web app from GitHub Pages, so content updates arrive with a normal push (no new APK needed).
+
+### Option C: Native build with Capacitor + Android Studio
+For an APK that contains all files itself: install Android Studio, copy the app files (everything except `.git`, `node_modules`, `android`) into a `www/` folder, then:
 ```bash
 npm install @capacitor/core @capacitor/cli @capacitor/android
-npx cap init "לומדים בכיף" "com.learning.kids" --web-dir .
+npx cap init "לומדים בכיף" "com.learning.kids" --web-dir www
 npx cap add android
 npx cap open android
-# Build APK in Android Studio
+# Build → Build APK(s) in Android Studio
+```
+
+### Styling (Tailwind) — rebuild after adding new CSS classes
+The styles are pre-built into `css/tailwind.css` (no CDN, so the app is styled offline). After adding Tailwind classes that weren't used before, rebuild it:
+```bash
+npx --yes tailwindcss@3.4.17 -c tailwind.config.js -i css/tailwind.input.css -o css/tailwind.css --minify
 ```
 
 ---

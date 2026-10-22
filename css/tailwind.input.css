@@ -1,0 +1,4 @@
+/* Source for css/tailwind.css — build command in tailwind.config.js */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
