@@ -1,5 +1,7 @@
 // Procedural Math Exercise Generator for Infinite Practice
 // Aligned with Israeli Ministry of Education (Preschool & Grades 3-4)
+import { shuffle, shuffleInPlace } from './random.js';
+
 
 const KID_EMOJIS = ['🍎', '⭐', '🚗', '🎈', '🐟', '⚽', '🐻', '🍓', '🧁', '🌸', '🐱', '🦋'];
 
@@ -87,7 +89,7 @@ export function generateAge5VisualCounting() {
       choices.push(fake);
     }
   }
-  choices.sort(() => Math.random() - 0.5);
+  shuffleInPlace(choices);
 
   return {
     id: 'math_proc_count_' + Date.now() + '_' + Math.random(),
@@ -121,7 +123,7 @@ export function generateAge5VisualSubtraction() {
       choices.push(fake);
     }
   }
-  choices.sort(() => Math.random() - 0.5);
+  shuffleInPlace(choices);
 
   return {
     id: 'math_proc_sub_' + Date.now() + '_' + Math.random(),
@@ -150,7 +152,7 @@ const LINE_ANIMALS = ['🐶', '🐱', '🐰', '🐻', '🐵', '🐸', '🐷', '�
 
 // Ordinal numbers to "sixth": 6 different animals stand in line behind a flag — who is third?
 export function generateAge5Ordinal() {
-  const animals = [...LINE_ANIMALS].sort(() => Math.random() - 0.5).slice(0, 6);
+  const animals = shuffle(LINE_ANIMALS).slice(0, 6);
   const position = randInt(0, 5);
 
   return {
@@ -182,7 +184,7 @@ export function generateAge5VisualAdd() {
       choices.push(fake);
     }
   }
-  choices.sort(() => Math.random() - 0.5);
+  shuffleInPlace(choices);
 
   return {
     id: 'math_proc_visadd_' + Date.now() + '_' + Math.random(),
@@ -219,7 +221,7 @@ export function generateAge8Multiplication() {
       choices.push(fake);
     }
   }
-  choices.sort(() => Math.random() - 0.5);
+  shuffleInPlace(choices);
 
   return {
     id: 'math_proc_mult_' + Date.now() + '_' + Math.random(),
@@ -251,7 +253,7 @@ export function generateAge8MissingFactor() {
       choices.push(fake);
     }
   }
-  choices.sort(() => Math.random() - 0.5);
+  shuffleInPlace(choices);
 
   return {
     id: 'math_proc_miss_' + Date.now() + '_' + Math.random(),
@@ -283,7 +285,7 @@ export function generateAge8Division() {
       choices.push(fake);
     }
   }
-  choices.sort(() => Math.random() - 0.5);
+  shuffleInPlace(choices);
 
   return {
     id: 'math_proc_div_' + Date.now() + '_' + Math.random(),
@@ -311,7 +313,7 @@ export function numberChoices(correct, offsets, count = 4, min = 0) {
     const fake = correct + pickRandom(offsets);
     if (fake >= min && !choices.includes(fake)) choices.push(fake);
   }
-  return choices.sort(() => Math.random() - 0.5);
+  return shuffleInPlace(choices);
 }
 
 export function choiceExercise({ idPrefix, title, instructionHebrew, formula, soundCue, correct, choices, feedbackNote }) {
@@ -347,11 +349,11 @@ export function generateGrade3DivisionWithRemainder() {
   const fakes = [[quotient + 1, remainder], [quotient - 1, remainder], [quotient, remainder + 1], [quotient, remainder - 1],
     [quotient + 1, remainder - 1], [quotient - 1, remainder + 1]]
     .filter(([q, r]) => q >= 1 && r >= 0 && r < divisor);
-  for (const f of fakes.sort(() => Math.random() - 0.5)) {
+  for (const f of shuffleInPlace(fakes)) {
     if (candidates.length === 4) break;
     if (!candidates.some(c => key(...c) === key(...f))) candidates.push(f);
   }
-  const options = candidates.sort(() => Math.random() - 0.5);
+  const options = shuffleInPlace(candidates);
 
   return {
     id: `math_g3_rem_${Date.now()}_${Math.random()}`,
@@ -379,7 +381,7 @@ export function placeValue(digits, idPrefix) {
   // Other digits of the same number are the natural mistakes; fill with random digits if needed
   const choices = [correct];
   const otherDigits = [...String(number)].map(Number).filter(d => d !== correct);
-  for (const d of otherDigits.sort(() => Math.random() - 0.5)) {
+  for (const d of shuffleInPlace(otherDigits)) {
     if (choices.length < 4 && !choices.includes(d)) choices.push(d);
   }
   while (choices.length < 4) {
@@ -393,7 +395,7 @@ export function placeValue(digits, idPrefix) {
     formula: number.toLocaleString('en-US'),
     soundCue: `מהי ספרת ה${PLACE_NAMES[place]} במספר ${number}?`,
     correct,
-    choices: choices.sort(() => Math.random() - 0.5),
+    choices: shuffleInPlace(choices),
     feedbackNote: `ספרת ה${PLACE_NAMES[place]}: ${correct}`
   });
 }
@@ -425,7 +427,7 @@ export function generateGrade3OrderOfOperations() {
     formula: `${form.formula} = ?`,
     soundCue: 'פתרו את התרגיל. זכרו, כפל לפני חיבור וחיסור.',
     correct: form.correct,
-    choices: choices.sort(() => Math.random() - 0.5)
+    choices: shuffleInPlace(choices)
   });
 }
 
@@ -480,7 +482,7 @@ export function generateGrade4Divisibility() {
     formula: `÷ ${d}`,
     soundCue: `איזה מספר מתחלק ב-${d} בלי שארית?`,
     correct,
-    choices: choices.sort(() => Math.random() - 0.5),
+    choices: shuffleInPlace(choices),
     feedbackNote: `<span dir="ltr">${correct} ÷ ${d} = ${correct / d}</span>`
   });
 }
@@ -513,7 +515,7 @@ export function generateGrade4RectangleMeasure() {
     formula: svg,
     soundCue: askArea ? `מהו השטח של מלבן שאורכו ${w} ורוחבו ${h}?` : `מהו ההיקף של מלבן שאורכו ${w} ורוחבו ${h}?`,
     correct,
-    choices: choices.sort(() => Math.random() - 0.5),
+    choices: shuffleInPlace(choices),
     feedbackNote: askArea
       ? `<span dir="ltr">${w} × ${h} = ${area}</span>`
       : `<span dir="ltr">${w} + ${h} + ${w} + ${h} = ${perimeter}</span>`
@@ -552,7 +554,7 @@ export function generateGrade4EquivalentFraction() {
     const n = base[0] * k + pickRandom([-1, 1, 2, 0]);
     if (d > 0 && n > 0 && n < d && Math.abs(n / d - value) > 1e-9 && `${n}/${d}` !== correct) wrongs.add(`${n}/${d}`);
   }
-  const choices = [correct, ...wrongs].slice(0, 4).sort(() => Math.random() - 0.5);
+  const choices = shuffle([correct, ...wrongs].slice(0, 4));
   return {
     id: `math_g4_eqfrac_${Date.now()}_${Math.random()}`,
     category: 'math',

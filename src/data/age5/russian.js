@@ -2,27 +2,34 @@
 // Same idea as age-5 English: hear + see a Russian word → pick the picture from the same topic; plus
 // upper/lower-case Cyrillic letter matching. Pictures and Hebrew meanings come from the English word bank.
 import { ENGLISH_VOCABULARY_TOPICS } from './english.js';
+import { shuffle } from '../../engine/random.js';
 
 // Russian word per English bank word, by topic ('orange' the colour ≠ 'orange' the fruit)
 const RUSSIAN_WORDS = {
   colors: { red: 'красный', blue: 'синий', green: 'зелёный', yellow: 'жёлтый', orange: 'оранжевый', purple: 'фиолетовый', brown: 'коричневый', black: 'чёрный', white: 'белый' },
-  fruits: { apple: 'яблоко', banana: 'банан', orange: 'апельсин', grapes: 'виноград', strawberry: 'клубника', watermelon: 'арбуз', lemon: 'лимон', pear: 'груша', cherry: 'вишня', peach: 'персик', pineapple: 'ананас', mango: 'манго', kiwi: 'киви' },
-  vegetables: { carrot: 'морковь', tomato: 'помидор', cucumber: 'огурец', corn: 'кукуруза', potato: 'картошка', onion: 'лук', garlic: 'чеснок', broccoli: 'брокколи', eggplant: 'баклажан', mushroom: 'гриб', lettuce: 'салат' },
-  animals: { cat: 'кошка', dog: 'собака', fish: 'рыба', bird: 'птица', cow: 'корова', horse: 'лошадь', lion: 'лев', elephant: 'слон', monkey: 'обезьяна', rabbit: 'кролик', duck: 'утка', frog: 'лягушка', pig: 'свинья', sheep: 'овца', bear: 'медведь', chicken: 'курица', snake: 'змея', turtle: 'черепаха', mouse: 'мышь', giraffe: 'жираф', butterfly: 'бабочка', bee: 'пчела' },
-  food: { bread: 'хлеб', milk: 'молоко', egg: 'яйцо', cheese: 'сыр', pizza: 'пицца', cake: 'торт', 'ice cream': 'мороженое', cookie: 'печенье', candy: 'конфета', water: 'вода' },
-  body: { eye: 'глаз', ear: 'ухо', nose: 'нос', mouth: 'рот', hand: 'рука', leg: 'нога', tooth: 'зуб' },
-  clothes: { shirt: 'футболка', pants: 'штаны', dress: 'платье', hat: 'кепка', shoes: 'кроссовки', socks: 'носки', coat: 'куртка', glasses: 'очки' },
-  toys: { ball: 'мяч', balloon: 'шарик', book: 'книга', pencil: 'карандаш', bag: 'рюкзак', 'teddy bear': 'мишка', house: 'дом', bed: 'кровать', door: 'дверь', key: 'ключ', clock: 'часы', phone: 'телефон' },
-  transport: { car: 'машина', bus: 'автобус', train: 'поезд', plane: 'самолёт', boat: 'лодка', bike: 'велосипед', truck: 'грузовик', rocket: 'ракета' },
-  nature: { sun: 'солнце', moon: 'луна', star: 'звезда', cloud: 'облако', rain: 'дождь', snow: 'снег', rainbow: 'радуга', tree: 'дерево', flower: 'цветок', sea: 'море' },
-  numbers: { one: 'один', two: 'два', three: 'три', four: 'четыре', five: 'пять', six: 'шесть', seven: 'семь', eight: 'восемь', nine: 'девять', ten: 'десять' },
+  fruits: { apple: 'яблоко', banana: 'банан', orange: 'апельсин', grapes: 'виноград', strawberry: 'клубника', watermelon: 'арбуз', lemon: 'лимон', pear: 'груша', cherry: 'вишня', peach: 'персик', pineapple: 'ананас', mango: 'манго', kiwi: 'киви', coconut: 'кокос', avocado: 'авокадо', melon: 'дыня' },
+  vegetables: { carrot: 'морковь', tomato: 'помидор', cucumber: 'огурец', corn: 'кукуруза', potato: 'картошка', onion: 'лук', garlic: 'чеснок', broccoli: 'брокколи', eggplant: 'баклажан', mushroom: 'гриб', lettuce: 'салат', pepper: 'перец' },
+  animals: { cat: 'кошка', dog: 'собака', fish: 'рыба', bird: 'птица', cow: 'корова', horse: 'лошадь', lion: 'лев', elephant: 'слон', monkey: 'обезьяна', rabbit: 'кролик', duck: 'утка', frog: 'лягушка', pig: 'свинья', sheep: 'овца', bear: 'медведь', chicken: 'курица', snake: 'змея', turtle: 'черепаха', mouse: 'мышь', giraffe: 'жираф', tiger: 'тигр', zebra: 'зебра', owl: 'сова', fox: 'лиса', wolf: 'волк', camel: 'верблюд', kangaroo: 'кенгуру', hedgehog: 'ёжик', goat: 'коза', panda: 'панда', crocodile: 'крокодил', dinosaur: 'динозавр' },
+  bugs: { butterfly: 'бабочка', bee: 'пчела', ant: 'муравей', spider: 'паук', ladybug: 'божья коровка', snail: 'улитка', caterpillar: 'гусеница' },
+  sea: { whale: 'кит', dolphin: 'дельфин', octopus: 'осьминог', crab: 'краб', shark: 'акула', shell: 'ракушка', shrimp: 'креветка', penguin: 'пингвин' },
+  food: { bread: 'хлеб', milk: 'молоко', egg: 'яйцо', cheese: 'сыр', pizza: 'пицца', cake: 'торт', 'ice cream': 'мороженое', cookie: 'печенье', candy: 'конфета', water: 'вода', sandwich: 'бутерброд', soup: 'суп', rice: 'рис', pasta: 'макароны', chocolate: 'шоколад', honey: 'мёд', juice: 'сок', popcorn: 'попкорн', hamburger: 'гамбургер', donut: 'пончик' },
+  body: { eye: 'глаз', ear: 'ухо', nose: 'нос', mouth: 'рот', hand: 'рука', leg: 'нога', tooth: 'зуб', tongue: 'язык', finger: 'палец' },
+  clothes: { shirt: 'футболка', pants: 'штаны', dress: 'платье', hat: 'кепка', shoes: 'кроссовки', socks: 'носки', coat: 'куртка', glasses: 'очки', scarf: 'шарф', gloves: 'перчатки', boots: 'сапоги', crown: 'корона', tie: 'галстук', shorts: 'шорты' },
+  toys: { ball: 'мяч', balloon: 'шарик', book: 'книга', pencil: 'карандаш', bag: 'рюкзак', 'teddy bear': 'мишка', house: 'дом', bed: 'кровать', door: 'дверь', key: 'ключ', clock: 'часы', phone: 'телефон', kite: 'воздушный змей', drum: 'барабан', puzzle: 'пазл', guitar: 'гитара', robot: 'робот', gift: 'подарок', scissors: 'ножницы', chair: 'стул', spoon: 'ложка', TV: 'телевизор' },
+  transport: { car: 'машина', bus: 'автобус', train: 'поезд', plane: 'самолёт', boat: 'лодка', bike: 'велосипед', truck: 'грузовик', rocket: 'ракета', helicopter: 'вертолёт', taxi: 'такси', ambulance: 'скорая помощь', 'fire truck': 'пожарная машина', 'police car': 'полицейская машина', ship: 'корабль', tractor: 'трактор', scooter: 'самокат', motorcycle: 'мотоцикл' },
+  nature: { sun: 'солнце', moon: 'луна', star: 'звезда', cloud: 'облако', rain: 'дождь', snow: 'снег', rainbow: 'радуга', tree: 'дерево', flower: 'цветок', sea: 'море', mountain: 'гора', fire: 'огонь', leaf: 'лист', wind: 'ветер', cactus: 'кактус', lightning: 'молния', umbrella: 'зонтик', earth: 'Земля' },
+  shapes: { circle: 'круг', square: 'квадрат', triangle: 'треугольник', star: 'звезда', heart: 'сердце', diamond: 'ромб' },
+  actions: { run: 'бегать', walk: 'ходить', swim: 'плавать', dance: 'танцевать', sing: 'петь', clap: 'хлопать', sleep: 'спать', write: 'писать', ride: 'кататься', climb: 'лазать', read: 'читать', cook: 'готовить', eat: 'есть', drink: 'пить', draw: 'рисовать', play: 'играть', laugh: 'смеяться', cry: 'плакать', wash: 'мыться' },
+  family: { mom: 'мама', dad: 'папа', baby: 'малыш', grandma: 'бабушка', grandpa: 'дедушка', boy: 'мальчик', girl: 'девочка', family: 'семья', teacher: 'учительница', doctor: 'врач' },
+  numbers: { zero: 'ноль', one: 'один', two: 'два', three: 'три', four: 'четыре', five: 'пять', six: 'шесть', seven: 'семь', eight: 'восемь', nine: 'девять', ten: 'десять' },
   greetings: { hello: 'привет', 'thank you': 'спасибо', yes: 'да', no: 'нет', 'good morning': 'доброе утро', 'good night': 'спокойной ночи', OK: 'хорошо', stop: 'стоп' }
 };
 
 // Card titles: Hebrew topic name + Russian
 const RUSSIAN_TOPIC_NAMES = {
-  colors: 'Цвета', fruits: 'Фрукты', vegetables: 'Овощи', animals: 'Животные', food: 'Еда', body: 'Тело',
-  clothes: 'Одежда', toys: 'Игрушки и дом', transport: 'Транспорт', nature: 'Природа', numbers: 'Числа', greetings: 'Слова'
+  colors: 'Цвета', fruits: 'Фрукты', vegetables: 'Овощи', animals: 'Животные', bugs: 'Насекомые', sea: 'Морские животные',
+  food: 'Еда', body: 'Тело', clothes: 'Одежда', toys: 'Игрушки и дом', transport: 'Транспорт', nature: 'Природа',
+  shapes: 'Фигуры', actions: 'Действия', family: 'Семья', numbers: 'Числа', greetings: 'Слова'
 };
 
 // Topics as { title, words: [{ word (Russian), emoji, he }] }, built from the English bank
@@ -46,10 +53,6 @@ const LOOKALIKE_LETTERS = {
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // Hear + see a Russian word → pick its picture (3 options from the same topic)

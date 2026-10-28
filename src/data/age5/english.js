@@ -1,8 +1,10 @@
 // Age 5 English Exercises
-// Focus: Basic visual vocabulary by topic (colors, fruits, vegetables, animals, food, body,
-// clothes, toys & home, transport, nature, shapes, numbers) + uppercase/lowercase letter matching.
+// Focus: Basic visual vocabulary by topic (colors, fruits, vegetables, animals, bugs, sea animals, food,
+// body, clothes, toys & home, transport, nature, shapes, actions, feelings, family, greetings, numbers)
+// + uppercase/lowercase letter matching.
 // Every round is generated fresh: each question shows + speaks an English word and the child
 // picks the matching picture out of 3 options from the SAME topic.
+import { shuffle } from '../../engine/random.js';
 
 // Each topic: title (shown on the card & used as the topic in the parent report)
 // and words { word, emoji, he }.
@@ -37,7 +39,10 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'peach', emoji: '🍑', he: 'אפרסק' },
       { word: 'pineapple', emoji: '🍍', he: 'אננס' },
       { word: 'mango', emoji: '🥭', he: 'מנגו' },
-      { word: 'kiwi', emoji: '🥝', he: 'קיווי' }
+      { word: 'kiwi', emoji: '🥝', he: 'קיווי' },
+      { word: 'coconut', emoji: '🥥', he: 'קוקוס' },
+      { word: 'avocado', emoji: '🥑', he: 'אבוקדו' },
+      { word: 'melon', emoji: '🍈', he: 'מלון' }
     ]
   },
   vegetables: {
@@ -53,7 +58,8 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'broccoli', emoji: '🥦', he: 'ברוקולי' },
       { word: 'eggplant', emoji: '🍆', he: 'חציל' },
       { word: 'mushroom', emoji: '🍄', he: 'פטרייה' },
-      { word: 'lettuce', emoji: '🥬', he: 'חסה' }
+      { word: 'lettuce', emoji: '🥬', he: 'חסה' },
+      { word: 'pepper', emoji: '🌶️', he: 'פלפל' }
     ]
   },
   animals: {
@@ -79,8 +85,43 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'turtle', emoji: '🐢', he: 'צב' },
       { word: 'mouse', emoji: '🐭', he: 'עכבר' },
       { word: 'giraffe', emoji: '🦒', he: 'ג׳ירפה' },
+      { word: 'tiger', emoji: '🐯', he: 'נמר' },
+      { word: 'zebra', emoji: '🦓', he: 'זברה' },
+      { word: 'owl', emoji: '🦉', he: 'ינשוף' },
+      { word: 'fox', emoji: '🦊', he: 'שועל' },
+      { word: 'wolf', emoji: '🐺', he: 'זאב' },
+      { word: 'camel', emoji: '🐫', he: 'גמל' },
+      { word: 'kangaroo', emoji: '🦘', he: 'קנגורו' },
+      { word: 'hedgehog', emoji: '🦔', he: 'קיפוד' },
+      { word: 'goat', emoji: '🐐', he: 'עז' },
+      { word: 'panda', emoji: '🐼', he: 'פנדה' },
+      { word: 'crocodile', emoji: '🐊', he: 'תנין' },
+      { word: 'dinosaur', emoji: '🦖', he: 'דינוזאור' }
+    ]
+  },
+  bugs: {
+    title: 'Bugs (חרקים ושרצים)',
+    words: [
       { word: 'butterfly', emoji: '🦋', he: 'פרפר' },
-      { word: 'bee', emoji: '🐝', he: 'דבורה' }
+      { word: 'bee', emoji: '🐝', he: 'דבורה' },
+      { word: 'ant', emoji: '🐜', he: 'נמלה' },
+      { word: 'spider', emoji: '🕷️', he: 'עכביש' },
+      { word: 'ladybug', emoji: '🐞', he: 'פרת משה רבנו' },
+      { word: 'snail', emoji: '🐌', he: 'חילזון' },
+      { word: 'caterpillar', emoji: '🐛', he: 'זחל' }
+    ]
+  },
+  sea: {
+    title: 'Sea Animals (חיות ים)',
+    words: [
+      { word: 'whale', emoji: '🐳', he: 'לווייתן' },
+      { word: 'dolphin', emoji: '🐬', he: 'דולפין' },
+      { word: 'octopus', emoji: '🐙', he: 'תמנון' },
+      { word: 'crab', emoji: '🦀', he: 'סרטן' },
+      { word: 'shark', emoji: '🦈', he: 'כריש' },
+      { word: 'shell', emoji: '🐚', he: 'צדף' },
+      { word: 'shrimp', emoji: '🦐', he: 'שרימפס' },
+      { word: 'penguin', emoji: '🐧', he: 'פינגווין' }
     ]
   },
   food: {
@@ -95,7 +136,17 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'ice cream', emoji: '🍦', he: 'גלידה' },
       { word: 'cookie', emoji: '🍪', he: 'עוגייה' },
       { word: 'candy', emoji: '🍬', he: 'סוכרייה' },
-      { word: 'water', emoji: '💧', he: 'מים' }
+      { word: 'water', emoji: '💧', he: 'מים' },
+      { word: 'sandwich', emoji: '🥪', he: 'כריך' },
+      { word: 'soup', emoji: '🍲', he: 'מרק' },
+      { word: 'rice', emoji: '🍚', he: 'אורז' },
+      { word: 'pasta', emoji: '🍝', he: 'פסטה' },
+      { word: 'chocolate', emoji: '🍫', he: 'שוקולד' },
+      { word: 'honey', emoji: '🍯', he: 'דבש' },
+      { word: 'juice', emoji: '🧃', he: 'מיץ' },
+      { word: 'popcorn', emoji: '🍿', he: 'פופקורן' },
+      { word: 'hamburger', emoji: '🍔', he: 'המבורגר' },
+      { word: 'donut', emoji: '🍩', he: 'סופגנייה' }
     ]
   },
   body: {
@@ -108,7 +159,9 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'hand', emoji: '✋', he: 'יד' },
       { word: 'foot', emoji: '🦶', he: 'כף רגל' },
       { word: 'leg', emoji: '🦵', he: 'רגל' },
-      { word: 'tooth', emoji: '🦷', he: 'שן' }
+      { word: 'tooth', emoji: '🦷', he: 'שן' },
+      { word: 'tongue', emoji: '👅', he: 'לשון' },
+      { word: 'finger', emoji: '☝️', he: 'אצבע' }
     ]
   },
   clothes: {
@@ -121,7 +174,13 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'shoes', emoji: '👟', he: 'נעליים' },
       { word: 'socks', emoji: '🧦', he: 'גרביים' },
       { word: 'coat', emoji: '🧥', he: 'מעיל' },
-      { word: 'glasses', emoji: '👓', he: 'משקפיים' }
+      { word: 'glasses', emoji: '👓', he: 'משקפיים' },
+      { word: 'scarf', emoji: '🧣', he: 'צעיף' },
+      { word: 'gloves', emoji: '🧤', he: 'כפפות' },
+      { word: 'boots', emoji: '👢', he: 'מגפיים' },
+      { word: 'crown', emoji: '👑', he: 'כתר' },
+      { word: 'tie', emoji: '👔', he: 'עניבה' },
+      { word: 'shorts', emoji: '🩳', he: 'מכנסיים קצרים' }
     ]
   },
   toys: {
@@ -138,7 +197,17 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'door', emoji: '🚪', he: 'דלת' },
       { word: 'key', emoji: '🔑', he: 'מפתח' },
       { word: 'clock', emoji: '⏰', he: 'שעון' },
-      { word: 'phone', emoji: '📱', he: 'טלפון' }
+      { word: 'phone', emoji: '📱', he: 'טלפון' },
+      { word: 'kite', emoji: '🪁', he: 'עפיפון' },
+      { word: 'drum', emoji: '🥁', he: 'תוף' },
+      { word: 'puzzle', emoji: '🧩', he: 'פאזל' },
+      { word: 'guitar', emoji: '🎸', he: 'גיטרה' },
+      { word: 'robot', emoji: '🤖', he: 'רובוט' },
+      { word: 'gift', emoji: '🎁', he: 'מתנה' },
+      { word: 'scissors', emoji: '✂️', he: 'מספריים' },
+      { word: 'chair', emoji: '🪑', he: 'כיסא' },
+      { word: 'spoon', emoji: '🥄', he: 'כפית' },
+      { word: 'TV', emoji: '📺', he: 'טלוויזיה' }
     ]
   },
   transport: {
@@ -151,7 +220,16 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'boat', emoji: '⛵', he: 'סירה' },
       { word: 'bike', emoji: '🚲', he: 'אופניים' },
       { word: 'truck', emoji: '🚚', he: 'משאית' },
-      { word: 'rocket', emoji: '🚀', he: 'טיל' }
+      { word: 'rocket', emoji: '🚀', he: 'טיל' },
+      { word: 'helicopter', emoji: '🚁', he: 'מסוק' },
+      { word: 'taxi', emoji: '🚕', he: 'מונית' },
+      { word: 'ambulance', emoji: '🚑', he: 'אמבולנס' },
+      { word: 'fire truck', emoji: '🚒', he: 'כבאית' },
+      { word: 'police car', emoji: '🚓', he: 'ניידת משטרה' },
+      { word: 'ship', emoji: '🚢', he: 'ספינה' },
+      { word: 'tractor', emoji: '🚜', he: 'טרקטור' },
+      { word: 'scooter', emoji: '🛴', he: 'קורקינט' },
+      { word: 'motorcycle', emoji: '🏍️', he: 'אופנוע' }
     ]
   },
   nature: {
@@ -166,7 +244,15 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'rainbow', emoji: '🌈', he: 'קשת' },
       { word: 'tree', emoji: '🌳', he: 'עץ' },
       { word: 'flower', emoji: '🌸', he: 'פרח' },
-      { word: 'sea', emoji: '🌊', he: 'ים' }
+      { word: 'sea', emoji: '🌊', he: 'ים' },
+      { word: 'mountain', emoji: '⛰️', he: 'הר' },
+      { word: 'fire', emoji: '🔥', he: 'אש' },
+      { word: 'leaf', emoji: '🍁', he: 'עלה' },
+      { word: 'wind', emoji: '🌬️', he: 'רוח' },
+      { word: 'cactus', emoji: '🌵', he: 'קקטוס' },
+      { word: 'lightning', emoji: '⚡', he: 'ברק' },
+      { word: 'umbrella', emoji: '☔', he: 'מטרייה' },
+      { word: 'earth', emoji: '🌍', he: 'כדור הארץ' }
     ]
   },
   shapes: {
@@ -192,7 +278,16 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'sleep', emoji: '😴', he: 'לישון' },
       { word: 'write', emoji: '✍️', he: 'לכתוב' },
       { word: 'ride', emoji: '🚴', he: 'לרכוב' },
-      { word: 'climb', emoji: '🧗', he: 'לטפס' }
+      { word: 'climb', emoji: '🧗', he: 'לטפס' },
+      { word: 'read', emoji: '📚', he: 'לקרוא' },
+      { word: 'cook', emoji: '👨‍🍳', he: 'לבשל' },
+      { word: 'eat', emoji: '🍽️', he: 'לאכול' },
+      { word: 'drink', emoji: '🥤', he: 'לשתות' },
+      { word: 'draw', emoji: '🎨', he: 'לצייר' },
+      { word: 'play', emoji: '🎮', he: 'לשחק' },
+      { word: 'laugh', emoji: '😂', he: 'לצחוק' },
+      { word: 'cry', emoji: '😭', he: 'לבכות' },
+      { word: 'wash', emoji: '🧼', he: 'לרחוץ' }
     ]
   },
   feelings: {
@@ -205,7 +300,24 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'surprised', emoji: '😮', he: 'מופתע' },
       { word: 'tired', emoji: '🥱', he: 'עייף' },
       { word: 'sick', emoji: '🤒', he: 'חולה' },
-      { word: 'silly', emoji: '🤪', he: 'מצחיק' }
+      { word: 'silly', emoji: '🤪', he: 'מצחיק' },
+      { word: 'cold', emoji: '🥶', he: 'קר לי' },
+      { word: 'hot', emoji: '🥵', he: 'חם לי' }
+    ]
+  },
+  family: {
+    title: 'Family & People (משפחה ואנשים)',
+    words: [
+      { word: 'mom', emoji: '👩', he: 'אמא' },
+      { word: 'dad', emoji: '👨', he: 'אבא' },
+      { word: 'baby', emoji: '👶', he: 'תינוק' },
+      { word: 'grandma', emoji: '👵', he: 'סבתא' },
+      { word: 'grandpa', emoji: '👴', he: 'סבא' },
+      { word: 'boy', emoji: '👦', he: 'ילד' },
+      { word: 'girl', emoji: '👧', he: 'ילדה' },
+      { word: 'family', emoji: '👪', he: 'משפחה' },
+      { word: 'teacher', emoji: '👩‍🏫', he: 'מורה' },
+      { word: 'doctor', emoji: '👩‍⚕️', he: 'רופאה' }
     ]
   },
   greetings: {
@@ -233,7 +345,8 @@ export const ENGLISH_VOCABULARY_TOPICS = {
       { word: 'seven', emoji: '7️⃣', he: 'שבע' },
       { word: 'eight', emoji: '8️⃣', he: 'שמונה' },
       { word: 'nine', emoji: '9️⃣', he: 'תשע' },
-      { word: 'ten', emoji: '🔟', he: 'עשר' }
+      { word: 'ten', emoji: '🔟', he: 'עשר' },
+      { word: 'zero', emoji: '0️⃣', he: 'אפס' }
     ]
   }
 };
@@ -249,10 +362,6 @@ const CONFUSABLE_LETTERS = {
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 function capitalize(word) {

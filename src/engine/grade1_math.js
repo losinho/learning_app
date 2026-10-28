@@ -2,6 +2,7 @@
 // in words — no < > = symbols in grade 1), addition/subtraction within 20, whole tens, the analog clock in
 // whole hours, comparing lengths.
 import { numberChoices, choiceExercise } from './procedural_math.js';
+import { shuffle } from './random.js';
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -9,10 +10,6 @@ function randInt(min, max) {
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // Number sequences: "41, 42, ?, 44" — steps of 1, 2, 5, 10 (also counting back by 1 and 10)

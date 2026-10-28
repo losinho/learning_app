@@ -3,13 +3,10 @@
 // (plurals, word families with a shared root).
 import { HEBREW_VOCABULARY_BANK, HEBREW_PLURALS } from '../age5/hebrew.js';
 import { mixRound } from './roundUtils.js';
+import { shuffle } from '../../engine/random.js';
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 const MARKS = /[֑-ׇ]/;

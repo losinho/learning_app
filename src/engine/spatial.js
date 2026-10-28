@@ -1,6 +1,7 @@
 // Spatial Words Generator (גן חובה: תחושה מרחבית – "להשתמש בשפה מדויקת כדי לתאר יחסים בסיסיים במרחב")
 // Each option is a small scene: an object placed above / below / beside / inside a container.
 // Right and left are left out on purpose: in a right-to-left screen they are easy to confuse.
+import { shuffle } from './random.js';
 
 const MOVERS = [
   { emoji: '🐱', name: 'החתול' },
@@ -24,10 +25,6 @@ const RELATIONS = {
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // Absolute positions (px) inside a 120x120 scene for the object and the container

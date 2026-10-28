@@ -4,13 +4,10 @@
 // Reuses the age-5 vocabulary bank; here the child READS the word (age 5 mostly listens).
 import { ENGLISH_VOCABULARY_TOPICS, generateEnglishWordMatch, generateEnglishLetterMatch } from '../age5/english.js';
 import { mixRound } from './roundUtils.js';
+import { shuffle } from '../../engine/random.js';
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // Every single word from the bank, with its topic

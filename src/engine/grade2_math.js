@@ -3,6 +3,7 @@
 // ×2, ×4, ×5, ×10 facts and matching division, "half" (linked to ÷2), the clock in whole and half hours.
 import { numberChoices, choiceExercise, placeValue } from './procedural_math.js';
 import { clockSvg } from './grade1_math.js';
+import { shuffle } from './random.js';
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -10,10 +11,6 @@ function randInt(min, max) {
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 const FACT_TABLES = [2, 4, 5, 10];

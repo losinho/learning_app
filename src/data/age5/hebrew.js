@@ -1,5 +1,6 @@
 // Age 5 Hebrew Curriculum: Ministry of Education (Gan Chova)
 // Vocabulary, Initial Sounds (צליל פותח), Syllables (הברות), Rhyme (חרוזים), Letter Names (שמות האותיות)
+import { shuffle } from '../../engine/random.js';
 
 // syllables: the word split for clapping. null = left out of the syllable game because the count
 // is ambiguous for children (initial shva like דְּבוֹרָה, or patah genuva like תַּפּוּחַ).
@@ -106,10 +107,6 @@ const LOOKALIKE_LETTERS = {
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // Generate dynamic word-to-picture exercise

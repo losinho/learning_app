@@ -3,13 +3,10 @@
 // opposites, plural nouns (regular and irregular). Answers are text only — the child reads.
 import { englishAge8_9Exercises } from '../age8_9/english.js';
 import { mixRound } from './roundUtils.js';
+import { shuffle } from '../../engine/random.js';
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // Fill-in-the-blank sentence (the existing fill_in_blank card): "The dogs ___ big."

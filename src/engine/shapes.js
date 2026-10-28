@@ -2,16 +2,13 @@
 // 2D shapes are drawn as inline SVG in a random colour, size and rotation, because the Ministry program
 // stresses that a shape's name does not depend on its colour, size or orientation
 // (e.g. a square "standing on its corner" is still a square).
+import { shuffle } from './random.js';
 
 const SHAPE_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899', '#14b8a6'];
 const ROTATIONS = [0, 0, 15, 30, 45, 90, 180, -20, -45];
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // Regular polygon centred in the 100x100 viewBox, first vertex at the top

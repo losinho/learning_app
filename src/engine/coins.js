@@ -1,5 +1,6 @@
 // Israeli Coins Generator (גן חובה: מושגים כמותיים בחיי היום יום – "הילד ידע לזהות מטבעות",
 // "הילד ידע להשתמש בכסף לצורך קנייה"). Coin pictures are in public/coins/.
+import { shuffle } from './random.js';
 
 export const COINS = [
   { id: 'agorot10', value: 0.1, name: 'עֶשֶׂר אֲגוֹרוֹת', spoken: 'עשר אגורות' },
@@ -28,10 +29,6 @@ const SHOP_ITEMS = [
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 export function coinImg(coinId) {

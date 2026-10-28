@@ -1,6 +1,7 @@
 // Grade 3 area measurement (new math program: "מדידת שטח" — comparing areas, measuring with unit squares,
 // סמ"ר). Shapes are drawn on a grid of unit squares; the area is the number of squares.
 import { numberChoices, choiceExercise } from './procedural_math.js';
+import { shuffleInPlace } from './random.js';
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -66,7 +67,7 @@ export function generateGrade3AreaCount() {
     formula: gridSvg(cells, pickRandom(FILLS)),
     soundCue: 'כל ריבוע הוא סנטימטר רבוע אחד. מהו השטח של הצורה?',
     correct: area,
-    choices: choices.sort(() => Math.random() - 0.5),
+    choices: shuffleInPlace(choices),
     feedbackNote: `השטח: ${area} סמ"ר (סופרים את הריבועים, לא את הצלעות)`
   });
 }

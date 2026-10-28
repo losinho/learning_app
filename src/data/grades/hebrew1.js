@@ -4,13 +4,10 @@
 // reading is the task). Reuses the gan word bank (src/data/age5/hebrew.js).
 import { HEBREW_VOCABULARY_BANK } from '../age5/hebrew.js';
 import { mixRound } from './roundUtils.js';
+import { shuffle } from '../../engine/random.js';
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
 }
 
 // ---- Niqqud helpers ----
