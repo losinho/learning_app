@@ -1,6 +1,7 @@
 // Parent Analytics & Learning Difficulty Report Modal
 import { storage } from '../storage.js';
 import { sfx } from '../audio/sfx.js';
+import { speech } from '../audio/speech.js';
 import { gradeOfProfile, gradeLabel, nextGrade } from '../data/grades.js';
 import { challengeSubjectsFor } from '../data/index.js';
 
@@ -135,6 +136,8 @@ function renderDashboard(container, profile, analytics, onClose) {
           </div>
 
           ${renderChallengeSection(profile, analytics.challengeStats)}
+
+          ${renderVoiceSection()}
 
           <!-- PROBLEM AREAS & CHALLENGES (The exact focus requested by parent) -->
           <div class="bg-rose-50/70 border-2 border-rose-200 rounded-2xl p-4">
@@ -305,6 +308,8 @@ function renderDashboard(container, profile, analytics, onClose) {
     if (e.target.id === 'parent-modal-backdrop') closeModal();
   });
 
+  setupVoiceSection(container);
+
   // Toggle session breakdowns
   container.querySelectorAll('.session-header').forEach(header => {
     header.addEventListener('click', () => {
@@ -330,6 +335,62 @@ function renderDashboard(container, profile, analytics, onClose) {
       }
     });
   }
+}
+
+// "🔊 Voices": whether the device has its own voice per language. Without one, speech.js falls back to
+// Google's online voice, so reading aloud needs internet for that language.
+const VOICE_LANGS = [
+  { lang: 'he-IL', label: 'עברית', sample: 'שלום! בואו נלמד יחד.' },
+  { lang: 'en-US', label: 'אנגלית', sample: 'Hello! Let us learn together.' },
+  { lang: 'ru-RU', label: 'רוסית', sample: 'Привет! Давай учиться вместе.' }
+];
+
+function renderVoiceSection() {
+  return `
+    <div class="bg-sky-50/70 border-2 border-sky-200 rounded-2xl p-4">
+      <h3 class="text-base font-black text-sky-950 flex items-center gap-2 mb-1">
+        <span>🔊</span> קולות הקראה במכשיר
+      </h3>
+      <p class="text-xs text-slate-600 font-semibold mb-2">כשיש במכשיר קול לשפה, ההקראה עובדת גם בלי אינטרנט. בלי קול מותקן משתמשים בקול של Google, שעובד רק עם אינטרנט.</p>
+      <div class="space-y-1.5">
+        ${VOICE_LANGS.map(v => `
+          <div class="bg-white rounded-xl border border-sky-100 p-2.5 flex items-center justify-between gap-2">
+            <div class="text-right">
+              <div class="font-black text-sm text-slate-800">${v.label}</div>
+              <div class="voice-status text-[11px] font-bold text-slate-500" data-lang="${v.lang}">בודק...</div>
+            </div>
+            <button class="voice-test-btn px-3 py-1.5 rounded-xl border-2 border-sky-200 bg-white hover:bg-sky-50 text-xs font-bold text-sky-900 cursor-pointer" data-lang="${v.lang}">🔊 בדיקה</button>
+          </div>
+        `).join('')}
+      </div>
+      <p class="voice-install-hint hidden text-[11px] text-slate-500 font-semibold mt-2">להתקנת קול חסר באנדרואיד: הגדרות ← מערכת ← שפות ← פלט של המרת טקסט לדיבור ← מנוע Google ← התקנת נתוני קול.</p>
+    </div>
+  `;
+}
+
+function setupVoiceSection(container) {
+  const update = () => {
+    const statuses = container.querySelectorAll('.voice-status');
+    if (!statuses.length) return;
+    let missing = false;
+    statuses.forEach(el => {
+      const has = speech.hasVoiceFor(el.dataset.lang);
+      if (!has) missing = true;
+      el.textContent = has ? '✅ קול מותקן במכשיר (עובד גם בלי אינטרנט)' : '🌐 אין קול במכשיר – קול של Google (צריך אינטרנט)';
+      el.className = `voice-status text-[11px] font-bold ${has ? 'text-emerald-700' : 'text-amber-700'}`;
+    });
+    container.querySelector('.voice-install-hint')?.classList.toggle('hidden', !missing);
+  };
+  update();
+  // Some browsers (Chrome on Android) load the voice list a moment after the page opens
+  if (speech.synth?.addEventListener) speech.synth.addEventListener('voiceschanged', update);
+
+  container.querySelectorAll('.voice-test-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = VOICE_LANGS.find(x => x.lang === btn.dataset.lang);
+      speech.speak(v.sample, v.lang, 0.9);
+    });
+  });
 }
 
 const CHALLENGE_MODES = [
@@ -442,7 +503,7 @@ function getPedagogicalTip(topic) {
   if (topic.includes('שברים')) {
     return 'מומלץ לחלק פיצה או עוגה לחלקים שווים כדי להמחיש את מושג השבר (חצי, רבע).';
   }
-  if (/Colors|Fruits|Vegetables|Animals|Food|Body|Clothes|Toys|Transport|Nature|Shapes|Numbers|Actions|Feelings|Greetings/.test(topic)) {
+  if (/Colors|Fruits|Vegetables|Animals|Food|Body|Clothes|Toys|Transport|Nature|Shapes|Numbers|Actions|Feelings|Greetings|Bugs|Sea Animals|Family/.test(topic)) {
     return 'מומלץ לשחק "איך אומרים באנגלית?" עם חפצים בבית, במטבח ובטיול, ולשיר שירי ילדים באנגלית על צבעים, חיות ופירות.';
   }
   if (topic.includes('הבנת הנקרא')) {

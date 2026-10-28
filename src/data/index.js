@@ -48,9 +48,10 @@ const SOURCES = {
     { grades: ['3'], build: (n) => getEnglishGrade3Exercises(n) },
     { grades: ['4'], build: (n) => getEnglishGrade4Exercises(n) }
   ],
-  // Basic Russian (gan-level enrichment, not in the Ministry curriculum) — offered to every grade
+  // Basic Russian (gan-level enrichment, not in the Ministry curriculum) — offered to every grade.
+  // The profile's gender (if set) adds feelings in the matching form (весёлый / весёлая).
   russian: [
-    { grades: ['gan', '1', '2', '3', '4'], build: (n) => getRussianAge5Exercises(n) }
+    { grades: ['gan', '1', '2', '3', '4'], build: (n, profile) => getRussianAge5Exercises(n, { gender: profile?.gender }) }
   ]
 };
 

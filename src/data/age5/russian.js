@@ -32,15 +32,39 @@ const RUSSIAN_TOPIC_NAMES = {
   shapes: 'Фигуры', actions: 'Действия', family: 'Семья', numbers: 'Числа', greetings: 'Слова'
 };
 
-// Topics as { title, words: [{ word (Russian), emoji, he }] }, built from the English bank
-export const RUSSIAN_VOCABULARY_TOPICS = Object.fromEntries(Object.entries(RUSSIAN_WORDS).map(([key, words]) => {
+// A topic as { title, words: [{ word (Russian), emoji, he }] }, built from the English bank.
+// words: English word -> Russian word, or [Russian word, Hebrew meaning] when the Hebrew differs from the bank's
+function buildTopic(key, words, russianName) {
   const english = ENGLISH_VOCABULARY_TOPICS[key];
   const hebrewName = (english.title.match(/\((.+)\)/) || [null, ''])[1];
-  return [key, {
-    title: `${hebrewName} (${RUSSIAN_TOPIC_NAMES[key]})`,
-    words: english.words.filter(w => words[w.word]).map(w => ({ word: words[w.word], emoji: w.emoji, he: w.he }))
-  }];
-}));
+  return {
+    title: `${hebrewName} (${russianName})`,
+    words: english.words.filter(w => words[w.word]).map(w => {
+      const [word, he] = [].concat(words[w.word]);
+      return { word, emoji: w.emoji, he: he || w.he };
+    })
+  };
+}
+
+export const RUSSIAN_VOCABULARY_TOPICS = Object.fromEntries(
+  Object.entries(RUSSIAN_WORDS).map(([key, words]) => [key, buildTopic(key, words, RUSSIAN_TOPIC_NAMES[key])]));
+
+// Feelings agree with the child's gender (весёлый / весёлая), so this topic is only used when the profile
+// says boy or girl. [boy, girl, Hebrew for a girl]; "мне холодно / жарко" is the same for both.
+const RUSSIAN_FEELINGS = {
+  happy: ['весёлый', 'весёлая', 'שמחה'], sad: ['грустный', 'грустная', 'עצובה'], angry: ['сердитый', 'сердитая', 'כועסת'],
+  scared: ['испуганный', 'испуганная', 'מפחדת'], surprised: ['удивлённый', 'удивлённая', 'מופתעת'],
+  tired: ['уставший', 'уставшая', 'עייפה'], sick: ['больной', 'больная', 'חולה'], silly: ['смешной', 'смешная', 'מצחיקה'],
+  cold: ['мне холодно', 'мне холодно'], hot: ['мне жарко', 'мне жарко']
+};
+
+// All topics for a child: gender is 'boy', 'girl' or anything else (unknown → no feelings topic)
+export function russianTopicsFor(gender) {
+  if (gender !== 'boy' && gender !== 'girl') return RUSSIAN_VOCABULARY_TOPICS;
+  const words = Object.fromEntries(Object.entries(RUSSIAN_FEELINGS).map(([en, [boy, girl, heGirl]]) =>
+    [en, gender === 'boy' ? boy : [girl, heGirl]]));
+  return { ...RUSSIAN_VOCABULARY_TOPICS, feelings: buildTopic('feelings', words, 'Чувства') };
+}
 
 const RUSSIAN_ALPHABET = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'.split('');
 
@@ -56,8 +80,8 @@ function pickRandom(arr) {
 }
 
 // Hear + see a Russian word → pick its picture (3 options from the same topic)
-export function generateRussianWordMatch(topicKey, targetWord = null) {
-  const topic = RUSSIAN_VOCABULARY_TOPICS[topicKey];
+export function generateRussianWordMatch(topicKey, targetWord = null, topics = RUSSIAN_VOCABULARY_TOPICS) {
+  const topic = topics[topicKey];
   const target = targetWord || pickRandom(topic.words);
   const distractors = shuffle(topic.words.filter(w => w.word !== target.word)).slice(0, 2);
   return {
@@ -97,9 +121,11 @@ export function generateRussianLetterMatch(letter = null) {
   };
 }
 
-// A round mixes topics (no topic repeats until all are used, no word repeats) with a letter question every 5th
-export function getRussianAge5Exercises(count = 20) {
-  const topicKeys = Object.keys(RUSSIAN_VOCABULARY_TOPICS);
+// A round mixes topics (no topic repeats until all are used, no word repeats) with a letter question every 5th.
+// options.gender ('boy' / 'girl') adds the feelings topic in the matching form.
+export function getRussianAge5Exercises(count = 20, options = {}) {
+  const topics = russianTopicsFor(options.gender);
+  const topicKeys = Object.keys(topics);
   let topicQueue = [];
   const usedWords = new Set();
   const usedLetters = new Set();
@@ -114,11 +140,11 @@ export function getRussianAge5Exercises(count = 20) {
     }
     if (topicQueue.length === 0) topicQueue = shuffle(topicKeys);
     const topicKey = topicQueue.pop();
-    const words = RUSSIAN_VOCABULARY_TOPICS[topicKey].words;
+    const words = topics[topicKey].words;
     const fresh = words.filter(w => !usedWords.has(w.word));
     const target = pickRandom(fresh.length ? fresh : words);
     usedWords.add(target.word);
-    list.push(generateRussianWordMatch(topicKey, target));
+    list.push(generateRussianWordMatch(topicKey, target, topics));
   }
   return list;
 }

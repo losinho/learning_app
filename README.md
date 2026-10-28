@@ -61,6 +61,30 @@ The app is published on GitHub Pages: **https://losinho.github.io/learning_app/*
    - an **`.aab`** for uploading to the Google Play Store,
    - a **signing key** — keep it safe; every future update of the app must be signed with the same key.
 4. The APK shows the web app from GitHub Pages, so content updates arrive with a normal push (no new APK needed).
+   The first launch needs internet; after that the service worker keeps the app working offline.
+
+#### Hiding the address bar in the APK (Digital Asset Links)
+The APK hides Chrome's address bar only after Android checks that the site "owns" the app. It looks for
+**`https://losinho.github.io/.well-known/assetlinks.json`** — at the root of the domain, which this project
+(served under `/learning_app/`) cannot provide. It needs the user-site repository:
+1. On GitHub create a public repository named exactly **`losinho.github.io`**.
+2. Add two files to it:
+   - **`.nojekyll`** (empty) — without it GitHub Pages skips folders that start with a dot, like `.well-known`;
+   - **`.well-known/assetlinks.json`** — take it from the PWABuilder zip (it already contains the package name and
+     the signing key's SHA-256 fingerprint). It looks like this:
+     ```json
+     [{
+       "relation": ["delegate_permission/common.handle_all_urls"],
+       "target": {
+         "namespace": "android_app",
+         "package_name": "<package id from PWABuilder>",
+         "sha256_cert_fingerprints": ["<SHA-256 fingerprint of the signing key>"]
+       }
+     }]
+     ```
+3. Settings → Pages → branch `main`, folder `/ (root)`. Check that the file opens in a browser at the address above.
+4. Reopen the APK (clear its data once if it still shows the bar). If the app is on Google Play, add the Play
+   Console's **App signing key** SHA-256 fingerprint to the same list too, since Play re-signs the app.
 
 ### Option C: Native build with Capacitor + Android Studio
 For an APK that contains all files itself: install Android Studio, copy the app files (everything except `.git`, `node_modules`, `android`) into a `www/` folder, then:

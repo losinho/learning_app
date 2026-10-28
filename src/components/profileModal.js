@@ -3,6 +3,12 @@ import { storage } from '../storage.js';
 import { sfx } from '../audio/sfx.js';
 import { SELECTABLE_GRADES, gradeOfProfile, gradeLabel } from '../data/grades.js';
 
+const GENDERS = [
+  { key: '', short: '—', label: '' },
+  { key: 'boy', short: 'בן', label: '👦 בן' },
+  { key: 'girl', short: 'בת', label: '👧 בת' }
+];
+
 export function renderProfileModal(modalContainer, onProfileChanged) {
   const profiles = storage.getProfiles();
   const activeProfile = storage.getActiveProfile();
@@ -10,6 +16,7 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
 
   let selectedAvatar = '🦁';
   let selectedGrade = 'gan';
+  let selectedGender = null;
 
   modalContainer.innerHTML = `
     <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -27,7 +34,7 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
         <!-- Existing Profiles List -->
         <div class="mb-6">
           <h3 class="text-sm font-bold text-slate-500 mb-2">בחרו פרופיל פעיל:</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="grid grid-cols-1 gap-2.5">
             ${profiles.map(p => {
               const isActive = p.id === activeProfile.id;
               const grade = gradeOfProfile(p);
@@ -43,6 +50,9 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
                   <select class="grade-change-select text-xs font-bold rounded-lg border border-slate-300 bg-white px-1 py-1 ml-1" data-id="${p.id}" title="שינוי כיתה">
                     ${!grade ? '<option value="" selected>כיתה?</option>' : ''}
                     ${SELECTABLE_GRADES.map(g => `<option value="${g.key}" ${g.key === grade ? 'selected' : ''}>${g.label}</option>`).join('')}
+                  </select>
+                  <select class="gender-change-select text-xs font-bold rounded-lg border border-slate-300 bg-white px-1 py-1 ml-1" data-id="${p.id}" title="בן / בת">
+                    ${GENDERS.map(g => `<option value="${g.key}" ${g.key === (p.gender || '') ? 'selected' : ''}>${g.short}</option>`).join('')}
                   </select>
                   ${profiles.length > 1 ? `
                     <button class="delete-profile-btn text-rose-400 hover:text-rose-600 p-1.5 text-sm" data-id="${p.id}" title="מחק פרופיל">🗑️</button>
@@ -63,6 +73,18 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">שם הילד/ה:</label>
               <input type="text" id="new-kid-name" placeholder="למשל: יונתן / מאיה" class="w-full px-3 py-2 text-base rounded-xl border-2 border-indigo-200 focus:outline-none focus:border-indigo-500 bg-white" />
+            </div>
+
+            <!-- Boy / girl (optional): languages with gendered words use the matching form -->
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">בן או בת? <span class="font-semibold text-slate-400">(לא חובה – לצורת המילים ברוסית)</span></label>
+              <div class="grid grid-cols-2 gap-2">
+                ${GENDERS.filter(g => g.key).map(g => `
+                  <button type="button" class="gender-select-btn p-2 rounded-xl border-2 font-bold text-sm text-center transition-all bg-white text-slate-700 border-slate-300 hover:bg-slate-50" data-gender="${g.key}">
+                    ${g.label}
+                  </button>
+                `).join('')}
+              </div>
             </div>
 
             <!-- Grade selection -->
@@ -146,6 +168,28 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
     });
   });
 
+  // Set an existing child's gender (or clear it)
+  modalContainer.querySelectorAll('.gender-change-select').forEach(select => {
+    select.addEventListener('click', (e) => e.stopPropagation());
+    select.addEventListener('change', () => {
+      storage.updateProfile(select.dataset.id, { gender: select.value || null });
+      sfx.playClick();
+      if (onProfileChanged) onProfileChanged();
+    });
+  });
+
+  // Gender buttons (new profile): clicking the chosen one again clears it
+  modalContainer.querySelectorAll('.gender-select-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedGender = selectedGender === btn.dataset.gender ? null : btn.dataset.gender;
+      modalContainer.querySelectorAll('.gender-select-btn').forEach(b => {
+        const on = b.dataset.gender === selectedGender;
+        b.className = `gender-select-btn p-2 rounded-xl border-2 font-bold text-sm text-center transition-all ${on ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`;
+      });
+      sfx.playClick();
+    });
+  });
+
   // Grade select buttons (new profile)
   modalContainer.querySelectorAll('.age-select-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -180,7 +224,7 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
       return;
     }
 
-    storage.createProfile(name, selectedGrade, selectedAvatar);
+    storage.createProfile(name, selectedGrade, selectedAvatar, selectedGender);
     sfx.playVictory();
     closeModal();
     if (onProfileChanged) onProfileChanged();

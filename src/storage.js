@@ -86,11 +86,13 @@ class StorageService {
     }
   }
 
-  createProfile(name, grade, avatar) {
+  // gender: 'boy', 'girl' or null (not set) — used where a language needs the matching form
+  createProfile(name, grade, avatar, gender = null) {
     const newProfile = {
       id: 'profile_' + Date.now(),
       name: name.trim() || 'ילד/ה',
       grade: grade || 'gan',
+      gender,
       ageGroup: grade === 'gan' || !grade ? '5' : grade, // kept for older code paths and session logs
       challengeMode: 'auto',
       avatar: avatar || DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)],
