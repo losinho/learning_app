@@ -1,6 +1,8 @@
 // Age 5 Hebrew Curriculum: Ministry of Education (Gan Chova)
 // Vocabulary, Initial Sounds (צליל פותח), Syllables (הברות), Rhyme (חרוזים), Letter Names (שמות האותיות)
 import { shuffle } from '../../engine/random.js';
+import { pickOddOneOut } from '../../engine/oddOneOut.js';
+import { ENGLISH_VOCABULARY_TOPICS, topicHebrewName } from './english.js';
 
 // syllables: the word split for clapping. null = left out of the syllable game because the count
 // is ambiguous for children (initial shva like דְּבוֹרָה, or patah genuva like תַּפּוּחַ).
@@ -417,8 +419,37 @@ export function generatePluralMatch() {
   };
 }
 
+// The Hebrew bank grouped into the English bank's topics by picture (🐶 → animals); words whose picture
+// is not in the English bank are left out of these groups
+const TOPIC_BY_EMOJI = new Map(Object.entries(ENGLISH_VOCABULARY_TOPICS)
+  .flatMap(([key, topic]) => topic.words.map(w => [w.emoji, key])));
+const HEBREW_TOPICS = {};
+for (const item of HEBREW_VOCABULARY_BANK) {
+  const key = TOPIC_BY_EMOJI.get(item.emoji);
+  if (key) (HEBREW_TOPICS[key] ||= { words: [] }).words.push(item);
+}
+
+// Odd one out (מה לא שייך? — sorting into groups): 3 pictures of one kind + 1 that doesn't belong
+export function generateHebrewOddOneOut() {
+  const { groupKey, group, odd } = pickOddOneOut(HEBREW_TOPICS);
+  return {
+    id: `heb_5_odd_${odd.word}`,
+    ageGroup: '5',
+    category: 'hebrew',
+    type: 'image_word_match',
+    showOptionLabels: true,
+    title: 'מה לא שייך?',
+    instructionHebrew: 'שלוש תמונות שייכות לאותה קבוצה. איזו תמונה לא שייכת?',
+    targetWordVocalized: '<span style="font-size:0.55em;white-space:nowrap">מה לא שייך? 🤔</span>',
+    soundCue: 'מה לא שייך?',
+    correctOptionId: odd.word,
+    feedbackNote: `${group.map(w => w.emoji).join(' ')} – ${topicHebrewName(groupKey)}<br>${odd.emoji} ${odd.word} – לא שייך`,
+    options: shuffle([...group, odd]).map(w => ({ id: w.word, emoji: w.emoji, label: w.word }))
+  };
+}
+
 // Generates a fresh round every time the child practices!
-// Cycle: word-picture, initial sound, syllables, rhyme, letter names, plural, final sound.
+// Cycle: word-picture, initial sound, syllables, rhyme, letter names, plural, final sound, odd one out.
 // The same question (same type + same target) never appears twice in one round.
 export function getHebrewAge5Exercises(count = 20) {
   const generators = [
@@ -428,17 +459,20 @@ export function getHebrewAge5Exercises(count = 20) {
     generateRhymeMatch,
     generateLetterName,
     generatePluralMatch,
-    generateFinalSound
+    generateFinalSound,
+    generateHebrewOddOneOut
   ];
+  // A question = its type + what is shown + its answer (odd-one-out always shows the same banner)
+  const keyOf = ex => `${ex.title}|${ex.targetWordVocalized}|${ex.correctOptionId}`;
   const used = new Set();
   const list = [];
   for (let i = 0; i < count; i++) {
     const generate = generators[i % generators.length];
     let ex = generate();
-    for (let tries = 0; tries < 30 && used.has(`${ex.title}|${ex.targetWordVocalized}`); tries++) {
+    for (let tries = 0; tries < 30 && used.has(keyOf(ex)); tries++) {
       ex = generate();
     }
-    used.add(`${ex.title}|${ex.targetWordVocalized}`);
+    used.add(keyOf(ex));
     list.push(ex);
   }
   return list;

@@ -2,7 +2,7 @@
 // Can-do goals covered: match a word to a picture, recognise everyday nouns/adjectives/action words,
 // recognise upper- and lower-case letters, letter–sound links (phonics), read short sentences.
 // Reuses the age-5 vocabulary bank; here the child READS the word (age 5 mostly listens).
-import { ENGLISH_VOCABULARY_TOPICS, generateEnglishWordMatch, generateEnglishLetterMatch } from '../age5/english.js';
+import { ENGLISH_VOCABULARY_TOPICS, generateEnglishWordMatch, generateEnglishLetterMatch, generateEnglishOddOneOut } from '../age5/english.js';
 import { mixRound } from './roundUtils.js';
 import { shuffle } from '../../engine/random.js';
 
@@ -123,12 +123,37 @@ export function generateGrade3Sentence() {
   };
 }
 
+// 5. Picture → word: see the picture, choose its written English word (3 words from the same topic)
+export function generateGrade3PictureToWord() {
+  const target = pickRandom(ALL_WORDS);
+  const words = ENGLISH_VOCABULARY_TOPICS[target.topicKey].words;
+  const distractors = shuffle(words.filter(w => w.word !== target.word && w.emoji !== target.emoji)).slice(0, 2);
+  return {
+    id: `eng_g3_pic_${target.topicKey}_${target.word.replace(/\s+/g, '_')}`,
+    category: 'english',
+    type: 'image_word_match',
+    showOptionLabels: true,
+    hideWordAudio: true, // hearing the word would give the answer away
+    title: 'Picture to Word (תמונה ומילה)',
+    instructionHebrew: 'איזו מילה באנגלית מתאימה לתמונה? קראו ובחרו:',
+    instructionEnglish: 'Which word matches the picture?',
+    targetWordVocalized: `<span style="font-size:1.8em;line-height:1">${target.emoji}</span>`,
+    lang: 'en-US',
+    correctOptionId: target.word,
+    revealWord: target.word,
+    correctAnswerHebrew: target.he,
+    options: shuffle([target, ...distractors]).map(w => ({ id: w.word, emoji: '', label: w.word }))
+  };
+}
+
 export function getEnglishGrade3Exercises(count = 20) {
   return mixRound(count, [
     generateGrade3ReadWord,
     generateGrade3Phonics,
+    generateGrade3PictureToWord,
     generateGrade3MissingLetter,
     generateGrade3Sentence,
+    generateEnglishOddOneOut,
     () => generateEnglishLetterMatch()
   ]);
 }

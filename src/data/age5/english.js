@@ -5,6 +5,7 @@
 // Every round is generated fresh: each question shows + speaks an English word and the child
 // picks the matching picture out of 3 options from the SAME topic.
 import { shuffle } from '../../engine/random.js';
+import { pickOddOneOut } from '../../engine/oddOneOut.js';
 
 // Each topic: title (shown on the card & used as the topic in the parent report)
 // and words { word, emoji, he }.
@@ -418,6 +419,33 @@ export function generateEnglishLetterMatch(letter = null) {
   };
 }
 
+// A topic's Hebrew name, from its title: 'Fruits (פירות)' → 'פירות'
+export function topicHebrewName(topicKey) {
+  const title = ENGLISH_VOCABULARY_TOPICS[topicKey].title;
+  return (title.match(/\((.+)\)/) || [null, title])[1];
+}
+
+// Odd one out: 3 pictures of one kind + 1 that doesn't belong, each with its English word
+export function generateEnglishOddOneOut() {
+  const { groupKey, group, odd } = pickOddOneOut(ENGLISH_VOCABULARY_TOPICS);
+  return {
+    id: `eng_odd_${odd.word.replace(/\s+/g, '_')}`,
+    ageGroup: '5',
+    category: 'english',
+    type: 'image_word_match',
+    showOptionLabels: true,
+    title: 'Odd One Out (מה לא שייך?)',
+    instructionHebrew: 'שלוש תמונות שייכות לאותה קבוצה. איזו תמונה לא שייכת?',
+    instructionEnglish: 'Which one does not belong?',
+    targetWordVocalized: '<span style="font-size:0.55em;white-space:nowrap">Odd one out 🤔</span>',
+    soundCue: 'Which one does not belong?',
+    lang: 'en-US',
+    correctOptionId: odd.word,
+    feedbackNote: `${group.map(w => w.emoji).join(' ')} – ${topicHebrewName(groupKey)}<br>${odd.emoji} ${odd.word} = ${odd.he}`,
+    options: shuffle([...group, odd]).map(w => ({ id: w.word, emoji: w.emoji, label: w.word }))
+  };
+}
+
 // Topic picker chips: the topic's Hebrew name (from its title) and its first word's emoji
 export function getEnglishTopicChips() {
   return Object.entries(ENGLISH_VOCABULARY_TOPICS).map(([key, topic]) => ({
@@ -440,7 +468,7 @@ function toListenOnly(ex) {
 }
 
 // Generates a fresh round. With no topic, the round mixes topics (no topic twice in a row)
-// and includes ~1 letter-matching question per 5 questions.
+// and every 5 questions include 1 odd-one-out and 1 letter-matching question.
 // topicKey: a topic ('fruits', 'colors', ...) practises only that topic; 'letters' practises only letters.
 // options.listenOnly hides the English word so the child must recognise it by ear.
 export function getEnglishAge5Exercises(count = 20, topicKey = null, options = {}) {
@@ -476,6 +504,13 @@ function buildEnglishRound(count, topicKey) {
   const list = [];
 
   for (let i = 0; i < count; i++) {
+    if (i % 5 === 2) {
+      let ex = generateEnglishOddOneOut();
+      for (let tries = 0; tries < 10 && usedWords.has(ex.correctOptionId); tries++) ex = generateEnglishOddOneOut();
+      usedWords.add(ex.correctOptionId);
+      list.push(ex);
+      continue;
+    }
     if (i % 5 === 4) {
       let letter;
       do { letter = pickRandom(ALPHABET); } while (usedLetters.has(letter));

@@ -49,9 +49,13 @@ const SOURCES = {
     { grades: ['4'], build: (n) => getEnglishGrade4Exercises(n) }
   ],
   // Basic Russian (gan-level enrichment, not in the Ministry curriculum) — offered to every grade.
-  // The profile's gender (if set) adds feelings in the matching form (весёлый / весёлая).
+  // The profile's gender (if set) adds feelings in the matching form (весёлый / весёлая); from grade 2
+  // (children read) some questions are picture → written word.
   russian: [
-    { grades: ['gan', '1', '2', '3', '4'], build: (n, profile) => getRussianAge5Exercises(n, { gender: profile?.gender }) }
+    { grades: ['gan', '1', '2', '3', '4'], build: (n, profile) => getRussianAge5Exercises(n, {
+      gender: profile?.gender,
+      reading: ['2', '3', '4'].includes(gradeOfProfile(profile))
+    }) }
   ]
 };
 

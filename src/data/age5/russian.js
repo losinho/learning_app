@@ -1,7 +1,8 @@
 // Basic Russian (gan level — enrichment; Russian is not part of the Ministry curriculum).
 // Same idea as age-5 English: hear + see a Russian word → pick the picture from the same topic; plus
 // upper/lower-case Cyrillic letter matching. Pictures and Hebrew meanings come from the English word bank.
-import { ENGLISH_VOCABULARY_TOPICS } from './english.js';
+import { ENGLISH_VOCABULARY_TOPICS, topicHebrewName } from './english.js';
+import { pickOddOneOut } from '../../engine/oddOneOut.js';
 import { shuffle } from '../../engine/random.js';
 
 // Russian word per English bank word, by topic ('orange' the colour ≠ 'orange' the fruit)
@@ -100,6 +101,46 @@ export function generateRussianWordMatch(topicKey, targetWord = null, topics = R
   };
 }
 
+// Picture → word (reading): see the picture, choose its written Russian word from the same topic
+export function generateRussianPictureToWord(topicKey, target, topics = RUSSIAN_VOCABULARY_TOPICS) {
+  const words = topics[topicKey].words;
+  const distractors = shuffle(words.filter(w => w.word !== target.word && w.emoji !== target.emoji)).slice(0, 2);
+  return {
+    id: `rus_read_${topicKey}_${target.word.replace(/\s+/g, '_')}`,
+    category: 'russian',
+    type: 'image_word_match',
+    showOptionLabels: true,
+    hideWordAudio: true, // hearing the word would give the answer away
+    title: 'קוראים מילה (Читаем)',
+    instructionHebrew: 'איזו מילה ברוסית מתאימה לתמונה? קראו ובחרו:',
+    targetWordVocalized: `<span style="font-size:1.8em;line-height:1">${target.emoji}</span>`,
+    lang: 'ru-RU',
+    correctOptionId: target.word,
+    revealWord: target.word,
+    correctAnswerHebrew: target.he,
+    options: shuffle([target, ...distractors]).map(w => ({ id: w.word, emoji: '', label: w.word }))
+  };
+}
+
+// Odd one out: 3 pictures of one kind + 1 that doesn't belong, each with its Russian word
+export function generateRussianOddOneOut(topics = RUSSIAN_VOCABULARY_TOPICS) {
+  const { groupKey, group, odd } = pickOddOneOut(topics);
+  return {
+    id: `rus_odd_${odd.word.replace(/\s+/g, '_')}`,
+    category: 'russian',
+    type: 'image_word_match',
+    showOptionLabels: true,
+    title: 'מה לא שייך? (Что лишнее?)',
+    instructionHebrew: 'שלוש תמונות שייכות לאותה קבוצה. איזו תמונה לא שייכת?',
+    targetWordVocalized: '<span style="font-size:0.55em;white-space:nowrap">Что лишнее? 🤔</span>',
+    soundCue: 'Что лишнее?',
+    lang: 'ru-RU',
+    correctOptionId: odd.word,
+    feedbackNote: `${group.map(w => w.emoji).join(' ')} – ${topicHebrewName(groupKey)}<br>${odd.emoji} ${odd.word} = ${odd.he}`,
+    options: shuffle([...group, odd]).map(w => ({ id: w.word, emoji: w.emoji, label: w.word }))
+  };
+}
+
 // Upper-case → lower-case Cyrillic letter (3 options, a look-alike when there is one)
 export function generateRussianLetterMatch(letter = null) {
   const target = letter || pickRandom(RUSSIAN_ALPHABET);
@@ -121,8 +162,9 @@ export function generateRussianLetterMatch(letter = null) {
   };
 }
 
-// A round mixes topics (no topic repeats until all are used, no word repeats) with a letter question every 5th.
-// options.gender ('boy' / 'girl') adds the feelings topic in the matching form.
+// A round mixes topics (no topic repeats until all are used, no word repeats). Every 5 questions include
+// 1 odd-one-out and 1 letter question. options.gender ('boy' / 'girl') adds the feelings topic in the
+// matching form; options.reading (children who read, grade 2+) turns 1 word question in 5 into picture → word.
 export function getRussianAge5Exercises(count = 20, options = {}) {
   const topics = russianTopicsFor(options.gender);
   const topicKeys = Object.keys(topics);
@@ -138,13 +180,21 @@ export function getRussianAge5Exercises(count = 20, options = {}) {
       list.push(generateRussianLetterMatch(letter));
       continue;
     }
+    if (i % 5 === 2) {
+      let ex = generateRussianOddOneOut(topics);
+      for (let tries = 0; tries < 10 && usedWords.has(ex.correctOptionId); tries++) ex = generateRussianOddOneOut(topics);
+      usedWords.add(ex.correctOptionId);
+      list.push(ex);
+      continue;
+    }
     if (topicQueue.length === 0) topicQueue = shuffle(topicKeys);
     const topicKey = topicQueue.pop();
     const words = topics[topicKey].words;
     const fresh = words.filter(w => !usedWords.has(w.word));
     const target = pickRandom(fresh.length ? fresh : words);
     usedWords.add(target.word);
-    list.push(generateRussianWordMatch(topicKey, target, topics));
+    const generate = options.reading && i % 5 === 1 ? generateRussianPictureToWord : generateRussianWordMatch;
+    list.push(generate(topicKey, target, topics));
   }
   return list;
 }

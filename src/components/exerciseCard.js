@@ -37,13 +37,13 @@ export function renderExerciseCard(container, exercise, onComplete) {
             </button>`}
           </div>
 
-          <!-- Options Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mt-2">
+          <!-- Options Grid (4 options, e.g. odd one out: 2×2 on phones, one row on wider screens) -->
+          <div class="grid ${exercise.options.length === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'} gap-4 w-full mt-2">
             ${exercise.options.map(opt => `
-              <button 
-                data-id="${opt.id}" 
-                class="option-card choice-pill btn-tactile ${opt.emoji ? 'p-6 sm:p-8' : 'px-2 py-4 sm:px-3'} flex flex-col items-center justify-center gap-2 text-center border-3 cursor-pointer">
-                ${opt.emoji ? `<span class="text-7xl sm:text-8xl filter drop-shadow-md transition-transform hover:scale-110">${opt.emoji}</span>` : ''}
+              <button
+                data-id="${opt.id}"
+                class="option-card choice-pill btn-tactile ${opt.emoji ? (exercise.options.length === 4 ? 'p-4 sm:p-5' : 'p-6 sm:p-8') : 'px-2 py-4 sm:px-3'} flex flex-col items-center justify-center gap-2 text-center border-3 cursor-pointer">
+                ${opt.emoji ? `<span class="${exercise.options.length === 4 ? 'text-6xl sm:text-7xl' : 'text-7xl sm:text-8xl'} filter drop-shadow-md transition-transform hover:scale-110">${opt.emoji}</span>` : ''}
                 ${(exercise.showOptionLabels && opt.label)
                   // Text-only answers (no picture) are shown large, so reading the word is the task
                   // bigLabels: early-reading questions (niqqud) need large text — as large as the word's length allows;
