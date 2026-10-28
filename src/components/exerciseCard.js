@@ -16,6 +16,7 @@ function bigLabelClass(label) {
 export function renderExerciseCard(container, exercise, onComplete) {
   let hasAnswered = false;
   let enteredNumber = '';
+  let revealFlash = null; // set for flash questions: shows the hidden picture again once answered
 
   // Foreign-language cards (English, Russian) are left-to-right and speak their own language
   const isRTL = !['english', 'russian'].includes(exercise.category);
@@ -327,6 +328,34 @@ export function renderExerciseCard(container, exercise, onComplete) {
       `;
       break;
 
+    case 'build_word':
+      // Picture + 🔊, a row of empty slots, and the shuffled tiles (syllables or letters) to tap in order
+      exerciseBodyHtml = `
+        <div class="flex flex-col items-center gap-5 my-4">
+          <div class="flex items-center gap-4 bg-amber-50 border-4 border-amber-300 px-8 py-3 rounded-3xl shadow-sm">
+            <span class="text-7xl sm:text-8xl filter drop-shadow-md">${exercise.emoji}</span>
+            <button id="btn-speak-word" class="p-3 bg-white hover:bg-amber-100 active:scale-95 border-2 border-amber-200 rounded-2xl shadow-sm text-2xl transition-all cursor-pointer" title="האזנה">
+              🔊
+            </button>
+          </div>
+
+          <div class="flex justify-center gap-2 flex-wrap">
+            ${exercise.pieces.map((_, i) => `
+              <button data-slot="${i}" class="build-slot min-w-[3.5rem] h-16 px-2 rounded-2xl border-4 border-dashed border-indigo-300 bg-white flex items-center justify-center font-black text-3xl sm:text-4xl text-slate-800 cursor-pointer"></button>
+            `).join('')}
+          </div>
+
+          <div class="flex justify-center gap-3 flex-wrap">
+            ${exercise.tiles.map((t, i) => `
+              <button data-tile="${i}" class="build-tile choice-pill btn-tactile min-w-[3.5rem] px-3 py-2 font-black text-3xl sm:text-4xl text-slate-800 cursor-pointer">${t}</button>
+            `).join('')}
+          </div>
+
+          <div id="build-correct" class="hidden flex justify-center gap-2"></div>
+        </div>
+      `;
+      break;
+
     case 'numeric_input':
       exerciseBodyHtml = `
         <div class="flex flex-col items-center gap-5 my-2">
@@ -434,6 +463,27 @@ export function renderExerciseCard(container, exercise, onComplete) {
     });
   }
 
+  // Flash questions (quick count): the banner is shown for flashMs, then covered; tapping it shows it again.
+  // Answering reveals it for good.
+  const flashBanner = exercise.flashMs ? container.querySelector('.vocalized-text') : null;
+  if (flashBanner) {
+    const shownHtml = flashBanner.innerHTML;
+    let flashTimer = null;
+    const cover = () => {
+      if (hasAnswered || !container.isConnected) return;
+      flashBanner.innerHTML = '<span class="text-base font-bold text-slate-500">👀 לחצו כדי לראות שוב</span>';
+    };
+    const show = () => {
+      clearTimeout(flashTimer);
+      flashBanner.innerHTML = shownHtml;
+      if (!hasAnswered) flashTimer = setTimeout(cover, exercise.flashMs);
+    };
+    show();
+    flashBanner.parentElement.classList.add('cursor-pointer');
+    flashBanner.parentElement.addEventListener('click', () => { if (!hasAnswered) show(); });
+    revealFlash = () => { clearTimeout(flashTimer); flashBanner.innerHTML = shownHtml; };
+  }
+
   // Listen-only questions hide the word, so it is spoken as soon as the card appears
   if (exercise.autoSpeak && wordSpeakBtn) {
     setTimeout(() => {
@@ -499,6 +549,7 @@ export function renderExerciseCard(container, exercise, onComplete) {
   function handleResult(validationResult, targetElement, submissionValue) {
     if (hasAnswered) return;
     hasAnswered = true;
+    if (revealFlash) revealFlash();
 
     feedbackBanner.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-300', 'text-emerald-800', 'bg-rose-50', 'border-rose-300', 'text-rose-800');
 
@@ -666,6 +717,46 @@ export function renderExerciseCard(container, exercise, onComplete) {
       if (slot) slot.textContent = selectedId;
       const result = validateAnswer(exercise, selectedId);
       handleResult(result, btn, selectedId);
+    });
+  });
+
+  // Type: build_word — a tile goes into the next empty slot; tapping a filled slot puts its tile back.
+  // When every slot is filled, the word is checked.
+  const buildSlots = [...container.querySelectorAll('.build-slot')];
+  const placedTiles = buildSlots.map(() => null); // tile index in each slot
+  container.querySelectorAll('.build-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      if (hasAnswered) return;
+      const free = placedTiles.indexOf(null);
+      if (free === -1) return;
+      sfx.playClick();
+      placedTiles[free] = Number(tile.dataset.tile);
+      buildSlots[free].textContent = exercise.tiles[placedTiles[free]];
+      buildSlots[free].classList.replace('border-dashed', 'border-solid');
+      tile.classList.add('invisible');
+      if (placedTiles.includes(null)) return;
+
+      const word = placedTiles.map(i => exercise.tiles[i]).join('');
+      const result = validateAnswer(exercise, word);
+      handleResult(result, null, word);
+      buildSlots.forEach(s => s.classList.add(...(result.isCorrect ? ['border-emerald-500', 'bg-emerald-50'] : ['border-rose-400', 'bg-rose-50'])));
+      if (!result.isCorrect) {
+        const correctRow = container.querySelector('#build-correct');
+        correctRow.innerHTML = exercise.pieces.map(p => `
+          <span class="min-w-[3.5rem] h-16 px-2 rounded-2xl border-4 border-emerald-500 bg-emerald-50 flex items-center justify-center font-black text-3xl sm:text-4xl text-emerald-800">${p}</span>
+        `).join('');
+        correctRow.classList.remove('hidden');
+      }
+    });
+  });
+  buildSlots.forEach((slot, s) => {
+    slot.addEventListener('click', () => {
+      if (hasAnswered || placedTiles[s] === null) return;
+      sfx.playClick();
+      container.querySelector(`.build-tile[data-tile="${placedTiles[s]}"]`).classList.remove('invisible');
+      placedTiles[s] = null;
+      slot.textContent = '';
+      slot.classList.replace('border-solid', 'border-dashed');
     });
   });
 

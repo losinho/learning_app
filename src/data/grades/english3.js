@@ -146,11 +146,40 @@ export function generateGrade3PictureToWord() {
   };
 }
 
+// 6. Build the word: hear it, see its picture, tap the letter tiles in order (c + a + t).
+// Short words only (3–5 letters, so the row fits a phone) plus one extra letter.
+const BUILDABLE = ALL_WORDS.filter(w => /^[a-z]{3,5}$/.test(w.word));
+const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+export function generateGrade3BuildWord() {
+  const target = pickRandom(BUILDABLE);
+  const letters = [...target.word];
+  const extra = pickRandom(ALPHABET.filter(l => !letters.includes(l)));
+  return {
+    id: `eng_g3_build_${target.word}`,
+    category: 'english',
+    type: 'build_word',
+    title: 'Build the Word (בונים מילה)',
+    instructionHebrew: 'הקשיבו למילה באנגלית ובנו אותה: לחצו על האותיות לפי הסדר.',
+    instructionEnglish: 'Listen and spell the word:',
+    emoji: target.emoji,
+    soundCue: target.word,
+    lang: 'en-US',
+    pieces: letters,
+    tiles: shuffle([...letters, extra]),
+    expectedAnswer: target.word,
+    correctOptionId: target.word, // keeps the round from repeating the word (mixRound key)
+    revealWord: target.word,
+    correctAnswerHebrew: target.he
+  };
+}
+
 export function getEnglishGrade3Exercises(count = 20) {
   return mixRound(count, [
     generateGrade3ReadWord,
     generateGrade3Phonics,
     generateGrade3PictureToWord,
+    generateGrade3BuildWord,
     generateGrade3MissingLetter,
     generateGrade3Sentence,
     generateEnglishOddOneOut,

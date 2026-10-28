@@ -2,7 +2,7 @@
 // The child links a spoken word to its first written syllable (letter + vowel sign), recognises vowel signs
 // that sound the same, and READS niqqud words and short sentences (no audio for the word itself —
 // reading is the task). Reuses the gan word bank (src/data/age5/hebrew.js).
-import { HEBREW_VOCABULARY_BANK } from '../age5/hebrew.js';
+import { HEBREW_VOCABULARY_BANK, generateMissingFirstLetter } from '../age5/hebrew.js';
 import { mixRound } from './roundUtils.js';
 import { shuffle } from '../../engine/random.js';
 
@@ -201,12 +201,38 @@ export function generateGrade1Sentence() {
   };
 }
 
+// 6. Build the word: hear it, see its picture, tap the syllable tiles in order (בַּ + לּוֹן).
+// One extra syllable from another word is mixed in, so the last tile isn't automatic.
+const BUILDABLE = HEBREW_VOCABULARY_BANK.filter(w => w.syllables && w.syllables.length >= 2 && w.syllables.length <= 3);
+const ALL_SYLLABLES = [...new Set(HEBREW_VOCABULARY_BANK.flatMap(w => w.syllables || []))];
+
+export function generateGrade1BuildWord() {
+  const target = pickRandom(BUILDABLE);
+  const extra = pickRandom(ALL_SYLLABLES.filter(s => !target.syllables.includes(s)));
+  return {
+    id: `heb_g1_build_${target.word}`,
+    category: 'hebrew',
+    type: 'build_word',
+    title: 'בונים מילה',
+    instructionHebrew: 'הקשיבו למילה ובנו אותה: לחצו על ההברות לפי הסדר.',
+    emoji: target.emoji,
+    soundCue: target.sound,
+    pieces: target.syllables,
+    tiles: shuffle([...target.syllables, extra]),
+    expectedAnswer: target.word,
+    correctOptionId: target.word, // keeps the round from repeating the word (mixRound key)
+    feedbackNote: `${target.emoji} ${target.syllables.join(' – ')}`
+  };
+}
+
 export function getHebrewGrade1Exercises(count = 20) {
   return mixRound(count, [
     generateGrade1FirstSyllable,
     generateGrade1ReadWord,
+    generateGrade1BuildWord,
     generateGrade1SameSound,
     generateGrade1ReadCarefully,
+    generateMissingFirstLetter,
     generateGrade1Sentence
   ]);
 }

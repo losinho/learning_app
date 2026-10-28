@@ -29,6 +29,16 @@ export function validateAnswer(exercise, submission) {
       };
     }
 
+    case 'build_word': {
+      // submission is the tiles joined in the order the child placed them
+      const isCorrect = String(submission) === String(exercise.expectedAnswer);
+      return {
+        isCorrect,
+        correctValue: exercise.expectedAnswer,
+        feedback: isCorrect ? 'מצוין! בנית את המילה!' : 'כמעט! ככה בונים את המילה:'
+      };
+    }
+
     case 'comparison_drill': {
       // submission is '<', '>', or '='
       let expected = '=';

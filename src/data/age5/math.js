@@ -1,5 +1,5 @@
 // Age 5 Math Curriculum: Quantity comparisons (< > =), Operations (+ -), Visual Counting & Addition,
-// Shapes & Solids, Coins, Patterns
+// Shapes & Solids, Coins, Patterns, Quick count (ten-frame)
 import {
   generateAge5Comparison,
   generateAge5OperatorChoice,
@@ -12,6 +12,7 @@ import { generateAge5ShapeMatch, generateAge5SolidMatch, generateAge5DrawnSolidM
 import { generateAge5CoinRecognition, generateAge5CoinBuying } from '../../engine/coins.js';
 import { generateAge5Spatial } from '../../engine/spatial.js';
 import { generatePattern } from '../../engine/patterns.js';
+import { generateTenFrame } from '../../engine/tenFrame.js';
 
 // Two exercises are "the same question" when they have the same type and the same numbers/answer
 function questionKey(ex) {
@@ -36,6 +37,7 @@ export function getMathAge5Exercises(count = 20) {
     () => generateAge5Ordinal,
     () => generateAge5Spatial,
     () => generatePattern,
+    () => generateTenFrame,
     rotating(generateAge5ShapeMatch, generateAge5DrawnSolidMatch, generateAge5SolidMatch),
     rotating(generateAge5CoinRecognition, generateAge5CoinBuying)
   ];

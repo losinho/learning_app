@@ -419,6 +419,39 @@ export function generatePluralMatch() {
   };
 }
 
+// Missing first letter (האות החסרה): hear the word, see its picture and the word with a dashed box in place
+// of the first letter (with its marks), e.g. ▢רְנָב — pick the letter.
+// Letters that sound the same at the start (א/ע, כ/ק, ת/ט) are never offered together.
+const MISSING_BOX = '<span style="display:inline-block;width:0.8em;height:1em;border:3px dashed #6366f1;border-radius:0.2em;vertical-align:middle"></span>';
+export function generateMissingFirstLetter() {
+  const target = pickRandom(HEBREW_VOCABULARY_BANK);
+  const chars = [...target.word];
+  let i = 1;
+  while (i < chars.length && /[\u0591-\u05C7]/.test(chars[i])) i++; // skip the first letter's marks
+  const shown = MISSING_BOX + chars.slice(i).join('');
+
+  const letter = target.letter;
+  const allowed = l => !soundsAlike(l, letter);
+  const lookalike = pickRandom((LOOKALIKE_LETTERS[letter] || []).filter(allowed));
+  const others = shuffle(HEBREW_LETTER_NAMES.map(l => l.letter).filter(l => allowed(l) && l !== lookalike));
+  const distractors = (lookalike ? [lookalike, ...others] : others).filter((l, k, arr) =>
+    arr.slice(0, k).every(prev => !soundsAlike(prev, l))).slice(0, 2);
+
+  return {
+    id: `heb_5_missing_${target.word}`,
+    ageGroup: '5',
+    category: 'hebrew',
+    type: 'image_word_match',
+    title: 'האות החסרה',
+    instructionHebrew: 'הקשיבו למילה. איזו אות חסרה בהתחלה?',
+    targetWordVocalized: `${target.emoji} ${shown}`,
+    soundCue: target.sound,
+    correctOptionId: letter,
+    feedbackNote: `${target.emoji} ${target.word}`,
+    options: shuffle([letter, ...distractors]).map(l => ({ id: l, emoji: l }))
+  };
+}
+
 // The Hebrew bank grouped into the English bank's topics by picture (🐶 → animals); words whose picture
 // is not in the English bank are left out of these groups
 const TOPIC_BY_EMOJI = new Map(Object.entries(ENGLISH_VOCABULARY_TOPICS)
@@ -449,7 +482,8 @@ export function generateHebrewOddOneOut() {
 }
 
 // Generates a fresh round every time the child practices!
-// Cycle: word-picture, initial sound, syllables, rhyme, letter names, plural, final sound, odd one out.
+// Cycle: word-picture, initial sound, syllables, rhyme, letter names, plural, final sound, odd one out,
+// missing first letter.
 // The same question (same type + same target) never appears twice in one round.
 export function getHebrewAge5Exercises(count = 20) {
   const generators = [
@@ -460,7 +494,8 @@ export function getHebrewAge5Exercises(count = 20) {
     generateLetterName,
     generatePluralMatch,
     generateFinalSound,
-    generateHebrewOddOneOut
+    generateHebrewOddOneOut,
+    generateMissingFirstLetter
   ];
   // A question = its type + what is shown + its answer (odd-one-out always shows the same banner)
   const keyOf = ex => `${ex.title}|${ex.targetWordVocalized}|${ex.correctOptionId}`;
