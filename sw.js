@@ -1,5 +1,5 @@
 // Service Worker for 100% offline capability
-const CACHE_NAME = 'edu-learning-app-v43';
+const CACHE_NAME = 'edu-learning-app-v46';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -16,6 +16,7 @@ const ASSETS_TO_CACHE = [
   './src/engine/oddOneOut.js',
   './src/engine/patterns.js',
   './src/engine/tenFrame.js',
+  './src/engine/character.js',
   './src/engine/procedural_math.js',
   './src/engine/shapes.js',
   './src/engine/coins.js',
@@ -56,7 +57,8 @@ const ASSETS_TO_CACHE = [
   './src/components/profileModal.js',
   './src/components/parentModal.js',
   './src/components/exerciseCard.js',
-  './src/components/victoryModal.js'
+  './src/components/victoryModal.js',
+  './src/components/shopModal.js'
 ];
 
 self.addEventListener('install', (event) => {

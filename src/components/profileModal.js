@@ -44,7 +44,7 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
                     <span class="text-3xl">${p.avatar}</span>
                     <div class="text-right">
                       <div class="font-bold text-slate-900">${p.name}</div>
-                      <div class="text-xs text-indigo-600 font-semibold">${grade ? gradeLabel(grade) : 'יש לבחור כיתה'} • ⭐ ${p.stars || 0}</div>
+                      <div class="text-xs text-indigo-600 font-semibold">${grade ? gradeLabel(grade) : 'יש לבחור כיתה'} • ⭐ ${storage.getStarBalance(p)}</div>
                     </div>
                   </div>
                   <select class="grade-change-select text-xs font-bold rounded-lg border border-slate-300 bg-white px-1 py-1 ml-1" data-id="${p.id}" title="שינוי כיתה">
@@ -77,7 +77,7 @@ export function renderProfileModal(modalContainer, onProfileChanged) {
 
             <!-- Boy / girl (optional): languages with gendered words use the matching form -->
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">בן או בת? <span class="font-semibold text-slate-400">(לא חובה – לצורת המילים ברוסית)</span></label>
+              <label class="block text-xs font-bold text-slate-600 mb-1">בן או בת? <span class="font-semibold text-slate-400">(לא חובה – לדמות בחנות ולצורת המילים ברוסית)</span></label>
               <div class="grid grid-cols-2 gap-2">
                 ${GENDERS.filter(g => g.key).map(g => `
                   <button type="button" class="gender-select-btn p-2 rounded-xl border-2 font-bold text-sm text-center transition-all bg-white text-slate-700 border-slate-300 hover:bg-slate-50" data-gender="${g.key}">

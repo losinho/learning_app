@@ -164,6 +164,37 @@ class StorageService {
     return profile;
   }
 
+  // profile.stars counts every star ever earned (the parent report shows it); spending only raises spentStars
+  getStarBalance(profile = this.getActiveProfile()) {
+    return Math.max(0, (profile?.stars || 0) - (profile?.spentStars || 0));
+  }
+
+  // The dress-up character's look. Separate from profile.avatar, the emoji symbol.
+  getCharacter(profile = this.getActiveProfile()) {
+    return { skin: 0, hair: 0, owned: [], equipped: {}, ...profile?.character };
+  }
+
+  updateCharacter(changes) {
+    const profile = this.getActiveProfile();
+    if (!profile) return null;
+    profile.character = { ...this.getCharacter(profile), ...changes };
+    this.save();
+    return profile.character;
+  }
+
+  // Pays for the items not owned yet, all or none; false if there aren't enough stars
+  buyItems(items) {
+    const profile = this.getActiveProfile();
+    if (!profile) return false;
+    const { owned } = this.getCharacter(profile);
+    const toBuy = items.filter(item => !owned.includes(item.id));
+    const total = toBuy.reduce((sum, item) => sum + item.cost, 0);
+    if (this.getStarBalance(profile) < total) return false;
+    profile.spentStars = (profile.spentStars || 0) + total;
+    this.updateCharacter({ owned: [...owned, ...toBuy.map(item => item.id)] });
+    return true;
+  }
+
   // Keeps the last 10 challenge results per subject; used by the automatic challenge level
   recordChallengeResult(subject, isCorrect) {
     const profile = this.getActiveProfile();

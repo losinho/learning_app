@@ -7,6 +7,7 @@ import { renderProfileModal } from './components/profileModal.js';
 import { renderParentModal } from './components/parentModal.js';
 import { renderExerciseCard } from './components/exerciseCard.js';
 import { showVictoryModal } from './components/victoryModal.js';
+import { renderShopModal } from './components/shopModal.js';
 import { getExercisesForProfile } from './data/index.js';
 import { renderEnglishTopicPicker } from './components/englishTopicPicker.js';
 import { renderGradeChoiceModal } from './components/gradeChoiceModal.js';
@@ -59,7 +60,8 @@ class LearningApp {
     renderHeader(
       this.headerMount, 
       () => this.openProfileModal(),
-      () => this.openParentModal()
+      () => this.openParentModal(),
+      () => this.openShopModal()
     );
     renderSubjectNav(this.navMount, this.activeSubject, (sub) => this.changeSubject(sub));
   }
@@ -78,6 +80,13 @@ class LearningApp {
   openParentModal() {
     renderParentModal(this.modalMount, () => {
       this.renderLayout();
+    });
+  }
+
+  openShopModal(onClosed) {
+    renderShopModal(this.modalMount, () => {
+      this.renderLayout();
+      if (onClosed) onClosed();
     });
   }
 
@@ -123,12 +132,13 @@ class LearningApp {
         storage.saveSession(this.currentSession);
       }
 
-      showVictoryModal(this.modalMount, this.sessionStars || this.exercises.length, () => {
+      const startNextRound = () => {
         this.sessionStars = 0;
         this.currentIndex = 0;
         this.loadExercises();
         this.renderCurrentExercise();
-      });
+      };
+      showVictoryModal(this.modalMount, this.sessionStars || this.exercises.length, startNextRound, () => this.openShopModal(startNextRound));
       return;
     }
 
@@ -185,7 +195,7 @@ class LearningApp {
         updatedProfile = storage.addBonusStar() || updatedProfile;
       }
       if (updatedProfile) {
-        updateHeaderStars(updatedProfile.stars);
+        updateHeaderStars(storage.getStarBalance(updatedProfile));
         sfx.playStar();
       }
       if (this.currentSession) {

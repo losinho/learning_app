@@ -1,7 +1,8 @@
 // Victory modal when completing exercises set
 import { sfx } from '../audio/sfx.js';
+import { storage } from '../storage.js';
 
-export function showVictoryModal(container, starsEarned, onContinue) {
+export function showVictoryModal(container, starsEarned, onContinue, onOpenShop) {
   sfx.playVictory();
 
   // Simple, self-contained canvas confetti animation
@@ -72,9 +73,18 @@ export function showVictoryModal(container, starsEarned, onContinue) {
         <button id="btn-victory-continue" class="w-full btn-tactile bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-3.5 rounded-2xl border-b-4 border-emerald-700 text-lg shadow-emerald-200 cursor-pointer">
           להמשיך לתרגילים נוספים! 🚀
         </button>
+        <button id="btn-victory-shop" class="w-full btn-tactile bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold py-2.5 rounded-2xl border-b-4 border-amber-300 text-base mt-2.5 cursor-pointer">
+          🛍️ לחנות – יש לך ${storage.getStarBalance()} ⭐
+        </button>
       </div>
     </div>
   `;
+
+  container.querySelector('#btn-victory-shop').addEventListener('click', () => {
+    sfx.playClick();
+    container.innerHTML = '';
+    if (onOpenShop) onOpenShop();
+  });
 
   container.querySelector('#btn-victory-continue').addEventListener('click', () => {
     sfx.playClick();

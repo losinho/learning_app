@@ -2,10 +2,12 @@
 import { storage } from '../storage.js';
 import { sfx } from '../audio/sfx.js';
 import { gradeOfProfile, gradeLabel } from '../data/grades.js';
+import { characterSvg } from '../engine/character.js';
 
-export function renderHeader(container, onOpenProfileModal, onOpenParentModal) {
+export function renderHeader(container, onOpenProfileModal, onOpenParentModal, onOpenShop) {
   const profile = storage.getActiveProfile();
   const settings = storage.getSettings();
+  const character = storage.getCharacter(profile);
 
   const grade = gradeOfProfile(profile);
   const ageLabel = grade ? gradeLabel(grade) : 'יש לבחור כיתה';
@@ -15,13 +17,13 @@ export function renderHeader(container, onOpenProfileModal, onOpenParentModal) {
       <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
         
         <!-- Kid Profile Button -->
-        <button id="btn-profile-badge" class="flex items-center gap-2.5 bg-indigo-50 hover:bg-indigo-100 active:scale-95 transition-all p-1.5 pr-3 pl-3 rounded-2xl border-2 border-indigo-200 shadow-sm cursor-pointer">
+        <button id="btn-profile-badge" class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 bg-indigo-50 hover:bg-indigo-100 active:scale-95 transition-all p-1.5 px-2 sm:px-3 rounded-2xl border-2 border-indigo-200 shadow-sm cursor-pointer">
           <span class="text-3xl filter drop-shadow">${profile.avatar}</span>
-          <div class="text-right">
-            <div class="font-extrabold text-indigo-950 text-base leading-tight">${profile.name}</div>
-            <div class="text-xs font-semibold text-indigo-600">${ageLabel}</div>
+          <div class="text-right min-w-0">
+            <div class="font-extrabold text-indigo-950 text-base leading-tight truncate">${profile.name}</div>
+            <div class="text-xs font-semibold text-indigo-600 truncate">${ageLabel}</div>
           </div>
-          <span class="text-xs bg-indigo-200 text-indigo-800 rounded-full px-1.5 py-0.5 mr-1 font-bold">החלף</span>
+          <span class="hidden sm:inline text-xs bg-indigo-200 text-indigo-800 rounded-full px-1.5 py-0.5 mr-1 font-bold">החלף</span>
         </button>
 
         <!-- Logo / App Title -->
@@ -31,7 +33,7 @@ export function renderHeader(container, onOpenProfileModal, onOpenParentModal) {
         </div>
 
         <!-- Controls: Parent Report, Stars & Audio -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
           
           <!-- Parent Report Button -->
           <button id="btn-parent-report" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all px-2.5 py-1.5 rounded-2xl border-2 border-slate-300 shadow-sm text-slate-700 font-bold text-xs cursor-pointer" title="דוח מעקב להורים">
@@ -39,11 +41,12 @@ export function renderHeader(container, onOpenProfileModal, onOpenParentModal) {
             <span class="hidden xs:inline">להורים</span>
           </button>
 
-          <!-- Stars counter -->
-          <div class="flex items-center gap-1.5 bg-amber-50 border-2 border-amber-300 px-3 py-1.5 rounded-2xl shadow-sm text-amber-900 font-black">
-            <span class="text-2xl animate-pulse">⭐</span>
-            <span id="header-stars-count" class="text-lg">${profile.stars || 0}</span>
-          </div>
+          <!-- Stars to spend: opens the shop -->
+          <button id="btn-open-shop" class="flex items-center gap-1 bg-amber-50 hover:bg-amber-100 active:scale-95 transition-all border-2 border-amber-300 px-2 py-1 rounded-2xl shadow-sm text-amber-900 font-black cursor-pointer" title="החנות">
+            ${profile.gender ? characterSvg({ gender: profile.gender, ...character }, { className: 'w-7 h-7', headOnly: true }) : '<span class="text-xl">🛍️</span>'}
+            <span class="text-lg">⭐</span>
+            <span id="header-stars-count" class="text-lg">${storage.getStarBalance(profile)}</span>
+          </button>
 
           <!-- Sound FX Toggle -->
           <button id="btn-toggle-sound" class="p-2 rounded-2xl border-2 transition-all cursor-pointer ${settings.sound ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-slate-100 border-slate-300 text-slate-400'}" title="צלילים">
@@ -72,6 +75,14 @@ export function renderHeader(container, onOpenProfileModal, onOpenParentModal) {
     });
   }
 
+  const shopBtn = container.querySelector('#btn-open-shop');
+  if (shopBtn) {
+    shopBtn.addEventListener('click', () => {
+      sfx.playClick();
+      if (onOpenShop) onOpenShop();
+    });
+  }
+
   const soundBtn = container.querySelector('#btn-toggle-sound');
   if (soundBtn) {
     soundBtn.addEventListener('click', () => {
@@ -80,7 +91,7 @@ export function renderHeader(container, onOpenProfileModal, onOpenParentModal) {
       storage.updateSettings({ sound: next });
       sfx.toggleSound(next);
       if (next) sfx.playSuccess();
-      renderHeader(container, onOpenProfileModal, onOpenParentModal);
+      renderHeader(container, onOpenProfileModal, onOpenParentModal, onOpenShop);
     });
   }
 }

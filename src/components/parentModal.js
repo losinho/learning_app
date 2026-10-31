@@ -117,7 +117,7 @@ function renderDashboard(container, profile, analytics, onClose) {
             <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
               <div class="text-xs font-bold text-amber-700">כוכבים שנצברו</div>
               <div class="text-2xl sm:text-3xl font-black text-amber-950 mt-0.5">⭐ ${profile.stars || 0}</div>
-              <div class="text-[11px] text-slate-500 font-medium">הישגים</div>
+              <div class="text-[11px] text-slate-500 font-medium">נותרו לקנייה: ${storage.getStarBalance(profile)}</div>
             </div>
 
             <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3 text-center">
