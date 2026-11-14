@@ -68,7 +68,15 @@ export function generateGrade3AreaCount() {
     soundCue: 'כל ריבוע הוא סנטימטר רבוע אחד. מהו השטח של הצורה?',
     correct: area,
     choices: shuffleInPlace(choices),
-    feedbackNote: `השטח: ${area} סמ"ר (סופרים את הריבועים, לא את הצלעות)`
+    feedbackNote: `השטח: ${area} סמ"ר (סופרים את הריבועים, לא את הצלעות)`,
+    explanation: [
+      'שטח = כמה ריבועים יש בתוך הצורה. כל ריבוע = 1 סמ"ר.',
+      'סופרים שורה אחרי שורה, ומסמנים באצבע כל ריבוע שכבר ספרנו.',
+      `יש ${area} ריבועים → השטח ${area} סמ"ר`
+    ],
+    mistakes: Object.fromEntries(choices.filter(c => c !== area).map(c => [String(c), c === perimeter
+      ? 'ספרתם את הצלעות מסביב – זה ההיקף. שטח זה הריבועים שבפנים.'
+      : 'ספרו שוב לאט, שורה אחרי שורה.']))
   });
 }
 
@@ -91,6 +99,14 @@ export function generateGrade3AreaCompare() {
     expectedAnswer: correct,
     correctOptionId: correct,
     feedbackNote: `צורה א: ${a.size} סמ"ר, צורה ב: ${b.size} סמ"ר`,
+    explanation: [
+      'סופרים את הריבועים בכל צורה:',
+      `צורה א: ${a.size} ריבועים, צורה ב: ${b.size} ריבועים`,
+      correct === 'שוות' ? 'אותו מספר ריבועים → השטחים שווים, גם אם הצורות נראות שונות!' : `לצורה ${correct} יש יותר ריבועים, אז השטח שלה גדול יותר.`
+    ],
+    mistakes: correct === 'שוות'
+      ? { 'א': 'צורה שנראית ארוכה יותר לא תמיד גדולה יותר. ספרו את הריבועים!', 'ב': 'צורה שנראית ארוכה יותר לא תמיד גדולה יותר. ספרו את הריבועים!' }
+      : {},
     options: [
       { id: 'א', label: 'צורה א' },
       { id: 'ב', label: 'צורה ב' },

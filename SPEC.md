@@ -19,7 +19,7 @@ An offline-first, installable web app (PWA) for Israeli children to practice **H
 
 ### 1.1 Principles
 1. **Deterministic, client-side checking** – every answer is validated in `src/engine/validator.js`; no AI/LLM or server calls.
-2. **Learn from mistakes** – a wrong answer is marked red, the correct answer is highlighted green, and the app auto-advances after 2 s (or on tap). There is no retry on the same question.
+2. **Learn from mistakes** – a wrong answer is marked red, the correct answer is highlighted green, and math questions explain the mistake step by step ("💡 בואו נבין"); the child moves on with "הבנתי". There is no retry on the same question.
 3. **Non-reader friendly** – instructions and target words have 🔊 buttons (text-to-speech in he-IL / en-US).
 4. **Infinite practice** – most age-5 content and age-8-9 arithmetic are generated procedurally, so each round is different.
 5. **No giveaways** – pictures never reveal the answer. Written questions (roots, plurals, grade-4 English) have text-only answers; a translation appears only in the feedback after answering. Never ❌/✅ pictures on answers, and wrong answers never share a picture the right one lacks (checked by the test suite).

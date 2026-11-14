@@ -2,6 +2,7 @@
 // in words — no < > = symbols in grade 1), addition/subtraction within 20, whole tens, the analog clock in
 // whole hours, comparing lengths.
 import { numberChoices, choiceExercise } from './procedural_math.js';
+import { mistakesFor, explainAdd, explainSub, addSubHint } from './explain.js';
 import { shuffle } from './random.js';
 
 function randInt(min, max) {
@@ -24,6 +25,7 @@ export function generateGrade1Sequence() {
   const missingAt = randInt(1, length - 1);
   const correct = terms[missingAt];
   const shown = terms.map((n, i) => (i === missingAt ? '?' : n)).join(', ');
+  const choices = numberChoices(correct, [-step, step, -1, 1, 10, -10], 4, 0);
 
   return choiceExercise({
     idPrefix: 'math_g1_seq',
@@ -32,8 +34,13 @@ export function generateGrade1Sequence() {
     formula: shown,
     soundCue: 'איזה מספר חסר בסדרה?',
     correct,
-    choices: numberChoices(correct, [-step, step, -1, 1, 10, -10], 4, 0),
-    feedbackNote: `<span dir="ltr">${terms.join(', ')}</span>`
+    choices,
+    feedbackNote: `<span dir="ltr">${terms.join(', ')}</span>`,
+    explanation: [
+      `בסדרה הזו כל פעם ${down ? 'יורדים' : 'עולים'} ב-${step}:`,
+      `<span dir="ltr">${terms.map((t, i) => (i === 0 ? t : `${down ? '−' : '+'}${step} → ${t}`)).join('  ')}</span>`
+    ],
+    mistakes: mistakesFor(choices, correct, w => `בדקו את הקפיצה: בין כל שני מספרים יש הפרש של ${step}.`)
   });
 }
 
@@ -60,24 +67,35 @@ export function generateGrade1CompareWords() {
     formula: `<span dir="rtl">${a} או ${b}?</span>`,
     soundCue: `איזה מספר ${word} יותר, ${a} או ${b}?`,
     correct,
-    choices: shuffle([a, b])
+    choices: shuffle([a, b]),
+    explanation: [
+      'משווים קודם את העשרות (הספרה השמאלית):',
+      `<span dir="ltr">${a}</span>: ${Math.floor(a / 10)} עשרות, <span dir="ltr">${b}</span>: ${Math.floor(b / 10)} עשרות`,
+      Math.floor(a / 10) === Math.floor(b / 10) ? 'העשרות שוות, אז משווים את האחדות.' : 'למי שיש יותר עשרות – הוא הגדול.',
+      `${correct} ${word} יותר.`
+    ]
   });
 }
 
 // Addition and subtraction within 20, including a missing addend ("7 + ? = 12")
 export function generateGrade1AddSub20() {
   const kind = pickRandom(['add', 'sub', 'missing']);
-  let formula, correct, soundCue;
+  let formula, correct, soundCue, explanation, hint;
   if (kind === 'add') {
     const a = randInt(2, 15), b = randInt(1, 20 - a);
     correct = a + b; formula = `${a} + ${b} = ?`; soundCue = `כמה זה ${a} ועוד ${b}?`;
+    explanation = explainAdd(a, b); hint = w => addSubHint(a, b, true, w);
   } else if (kind === 'sub') {
     const a = randInt(5, 20), b = randInt(1, a - 1);
     correct = a - b; formula = `${a} - ${b} = ?`; soundCue = `כמה זה ${a} פחות ${b}?`;
+    explanation = explainSub(a, b); hint = w => addSubHint(a, b, false, w);
   } else {
     const a = randInt(1, 12), c = randInt(a + 1, 20);
     correct = c - a; formula = `${a} + ? = ${c}`; soundCue = `${a} ועוד כמה שווה ${c}?`;
+    explanation = [`מחפשים כמה חסר מ-${a} עד ${c}. זה כמו <span dir="ltr">${c} - ${a}</span>:`, ...explainSub(c, a).slice(1)];
+    hint = w => (w === a + c ? `חיברתם את שני המספרים. צריך לבדוק: <span dir="ltr">${a} + ? = ${c}</span>` : `בדיקה: <span dir="ltr">${a} + ${w} = ${a + w}</span>, ולא ${c}.`);
   }
+  const choices = numberChoices(correct, [-2, -1, 1, 2, 10, -10], 4, 0);
   return choiceExercise({
     idPrefix: 'math_g1_as20',
     title: 'חיבור וחיסור עד 20',
@@ -85,9 +103,13 @@ export function generateGrade1AddSub20() {
     formula,
     soundCue,
     correct,
-    choices: numberChoices(correct, [-2, -1, 1, 2, 10, -10], 4, 0)
+    choices,
+    explanation,
+    mistakes: mistakesFor(choices, correct, hint)
   });
 }
+
+const tensWord = n => (n === 1 ? 'עשרת אחת' : `${n} עשרות`);
 
 // Whole tens within 100: "30 + 20", "70 - 40"
 export function generateGrade1Tens() {
@@ -102,7 +124,12 @@ export function generateGrade1Tens() {
     formula: `${a} ${add ? '+' : '-'} ${b} = ?`,
     soundCue: `כמה זה ${a} ${add ? 'ועוד' : 'פחות'} ${b}?`,
     correct,
-    choices: numberChoices(correct, [-10, 10, -20, 20, -1, 1], 4, 0)
+    choices: numberChoices(correct, [-10, 10, -20, 20, -1, 1], 4, 0),
+    explanation: [
+      'חושבים על עשרות כמו על מספרים קטנים:',
+      `${tensWord(a / 10)} ${add ? 'ועוד' : 'פחות'} ${tensWord(b / 10)} = ${tensWord(correct / 10)}`,
+      `<span dir="ltr">${a / 10} ${add ? '+' : '-'} ${b / 10} = ${correct / 10}</span> → <span dir="ltr">${a} ${add ? '+' : '-'} ${b} = ${correct}</span>`
+    ]
   });
 }
 
@@ -142,6 +169,14 @@ export function generateGrade1Clock() {
     expectedAnswer: hour,
     correctOptionId: String(hour),
     feedbackNote: `<span dir="ltr">${label(hour)}</span>`,
+    explanation: [
+      `המחוג הקצר (השחור) מראה את השעה – הוא מצביע על ${hour}.`,
+      'המחוג הארוך (האדום) על 12 – זה אומר שעה עגולה.',
+      `→ השעה <span dir="ltr">${label(hour)}</span>`
+    ],
+    mistakes: mistakesFor(choices, hour, h => (h === 12 && hour !== 12
+      ? 'קראתם את המחוג הארוך. את השעה מראה המחוג הקצר!'
+      : 'הסתכלו על המחוג הקצר: על איזה מספר הוא מצביע?')),
     options: choices.map(h => ({ id: String(h), label: label(h) }))
   };
 }

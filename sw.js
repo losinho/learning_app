@@ -1,5 +1,5 @@
 // Service Worker for 100% offline capability
-const CACHE_NAME = 'edu-learning-app-v46';
+const CACHE_NAME = 'edu-learning-app-v47';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -18,6 +18,7 @@ const ASSETS_TO_CACHE = [
   './src/engine/tenFrame.js',
   './src/engine/character.js',
   './src/engine/procedural_math.js',
+  './src/engine/explain.js',
   './src/engine/shapes.js',
   './src/engine/coins.js',
   './src/engine/spatial.js',

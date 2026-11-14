@@ -3,6 +3,7 @@
 // ×2, ×4, ×5, ×10 facts and matching division, "half" (linked to ÷2), the clock in whole and half hours.
 import { numberChoices, choiceExercise, placeValue } from './procedural_math.js';
 import { clockSvg } from './grade1_math.js';
+import { mistakesFor, explainAdd, explainSub, addSubHint, explainMultiply, multiplyHint, explainDivide, divideHint } from './explain.js';
 import { shuffle } from './random.js';
 
 function randInt(min, max) {
@@ -44,6 +45,17 @@ export function generateGrade2CompareSymbols() {
     expectedAnswer: correct,
     correctOptionId: correct,
     feedbackNote: `<span dir="ltr">${a} ${correct} ${b}</span>`,
+    explanation: [
+      a === b ? 'שני המספרים זהים, אז הם שווים (=).' : `${Math.max(a, b)} גדול מ-${Math.min(a, b)}.`,
+      String(a).length !== String(b).length
+        ? 'למספר עם יותר ספרות יש ערך גדול יותר.'
+        : 'משווים ספרה-ספרה משמאל: קודם המאות, אחר כך העשרות, ואז האחדות.',
+      'הפה הפתוח של הסימן תמיד "אוכל" את המספר הגדול: <span dir="ltr">5 &gt; 2</span>, <span dir="ltr">2 &lt; 5</span>'
+    ],
+    mistakes: Object.fromEntries(['<', '=', '>'].filter(x => x !== correct).map(x => [x,
+      x === '=' ? 'המספרים לא זהים, אז הם לא שווים.'
+        : correct === '=' ? 'המספרים זהים לגמרי, אז הם שווים (=).'
+        : 'הסימן הפוך! הפה הפתוח צריך להיות מול המספר הגדול.'])),
     options: ['<', '=', '>'].map(s => ({ id: s, label: s }))
   };
 }
@@ -60,6 +72,8 @@ export function generateGrade2AddSub100() {
     b = randInt(5, a - 1);
   }
   const correct = add ? a + b : a - b;
+  // ±10 is the classic carrying/borrowing mistake
+  const choices = numberChoices(correct, [-10, 10, -1, 1, -2, 2], 4, 0);
   return choiceExercise({
     idPrefix: 'math_g2_as100',
     title: 'חיבור וחיסור עד 100',
@@ -67,8 +81,9 @@ export function generateGrade2AddSub100() {
     formula: `${a} ${add ? '+' : '-'} ${b} = ?`,
     soundCue: `כמה זה ${a} ${add ? 'ועוד' : 'פחות'} ${b}?`,
     correct,
-    // ±10 is the classic carrying/borrowing mistake
-    choices: numberChoices(correct, [-10, 10, -1, 1, -2, 2], 4, 0)
+    choices,
+    explanation: add ? explainAdd(a, b) : explainSub(a, b),
+    mistakes: mistakesFor(choices, correct, w => addSubHint(a, b, add, w))
   });
 }
 
@@ -79,6 +94,7 @@ export function generateGrade2Facts() {
   const product = table * other;
   if (Math.random() < 0.65) {
     const [x, y] = Math.random() < 0.5 ? [table, other] : [other, table];
+    const choices = numberChoices(product, [-table, table, -other, other, 1, -1], 4, 1);
     return choiceExercise({
       idPrefix: 'math_g2_mult',
       title: 'עובדות הכפל',
@@ -86,9 +102,12 @@ export function generateGrade2Facts() {
       formula: `${x} × ${y} = ?`,
       soundCue: `כמה זה ${x} כפול ${y}?`,
       correct: product,
-      choices: numberChoices(product, [-table, table, -other, other, 1, -1], 4, 1)
+      choices,
+      explanation: explainMultiply(x, y),
+      mistakes: mistakesFor(choices, product, w => multiplyHint(x, y, w))
     });
   }
+  const divChoices = numberChoices(other, [-1, 1, -2, 2, 3], 4, 1);
   return choiceExercise({
     idPrefix: 'math_g2_div',
     title: 'עובדות החילוק',
@@ -96,8 +115,10 @@ export function generateGrade2Facts() {
     formula: `${product} ÷ ${table} = ?`,
     soundCue: `כמה זה ${product} לחלק ל-${table}?`,
     correct: other,
-    choices: numberChoices(other, [-1, 1, -2, 2, 3], 4, 1),
-    feedbackNote: `<span dir="ltr">${table} × ${other} = ${product}</span>`
+    choices: divChoices,
+    feedbackNote: `<span dir="ltr">${table} × ${other} = ${product}</span>`,
+    explanation: explainDivide(product, table, other),
+    mistakes: mistakesFor(divChoices, other, w => divideHint(product, table, w))
   });
 }
 
@@ -110,6 +131,7 @@ export function generateGrade2Groups() {
     `<span style="display:inline-block;border:2px dashed #a5b4fc;border-radius:12px;padding:2px 6px;margin:3px;font-size:28px;line-height:1.2">${emoji.repeat(each)}</span>`
   ).join('');
   const correct = groups * each;
+  const choices = numberChoices(correct, [-each, each, -1, 1, groups + each - correct], 4, 1);
   return choiceExercise({
     idPrefix: 'math_g2_groups',
     title: 'כפל כקבוצות שוות',
@@ -117,8 +139,18 @@ export function generateGrade2Groups() {
     formula: `<span style="display:inline-block;max-width:360px;white-space:normal">${picture}</span>`,
     soundCue: `יש ${groups} קבוצות, ובכל קבוצה ${each}. כמה יש בסך הכל?`,
     correct,
-    choices: numberChoices(correct, [-each, each, -1, 1, groups + each - correct], 4, 1),
-    feedbackNote: `<span dir="ltr">${groups} × ${each} = ${correct}</span>`
+    choices,
+    feedbackNote: `<span dir="ltr">${groups} × ${each} = ${correct}</span>`,
+    explanation: [
+      `סופרים בקפיצות של ${each}, קפיצה לכל קבוצה:`,
+      `<span dir="ltr">${Array.from({ length: groups }, (_, i) => each * (i + 1)).join(', ')}</span>`,
+      `${groups} קבוצות של ${each} → <span dir="ltr">${groups} × ${each} = ${correct}</span>`
+    ],
+    mistakes: mistakesFor(choices, correct, w => {
+      if (w === groups + each) return `חיברתם את מספר הקבוצות (${groups}) ואת מה שיש בקבוצה (${each}). צריך לספור את כולם!`;
+      if (Math.abs(w - correct) === each) return `חסרה או עודפת קבוצה אחת. יש בדיוק ${groups} קבוצות.`;
+      return '';
+    })
   });
 }
 
@@ -126,6 +158,7 @@ export function generateGrade2Groups() {
 export function generateGrade2Half() {
   const whole = 2 * randInt(2, 25);
   const correct = whole / 2;
+  const choices = numberChoices(correct, [-1, 1, -2, 2, correct], 4, 1);
   return choiceExercise({
     idPrefix: 'math_g2_half',
     title: 'חצי',
@@ -133,8 +166,16 @@ export function generateGrade2Half() {
     formula: `<span dir="rtl">חצי מ-${whole} = ?</span>`,
     soundCue: `כמה זה חצי מ-${whole}?`,
     correct,
-    choices: numberChoices(correct, [-1, 1, -2, 2, correct], 4, 1),
-    feedbackNote: `<span dir="ltr">${whole} ÷ 2 = ${correct}</span>`
+    choices,
+    feedbackNote: `<span dir="ltr">${whole} ÷ 2 = ${correct}</span>`,
+    explanation: [
+      'חצי = מחלקים ל-2 חלקים שווים.',
+      `איזה מספר ועוד אותו מספר שווה ${whole}?`,
+      `<span dir="ltr">${correct} + ${correct} = ${whole}</span> → חצי מ-${whole} הוא ${correct}`
+    ],
+    mistakes: mistakesFor(choices, correct, w => (w === whole
+      ? 'זה המספר השלם. חצי זה פחות – רק אחד משני חלקים שווים.'
+      : `בדיקה: <span dir="ltr">${w} + ${w} = ${w * 2}</span>, ולא ${whole}.`))
   });
 }
 
@@ -161,6 +202,23 @@ export function generateGrade2Clock() {
     expectedAnswer: correct,
     correctOptionId: correct,
     feedbackNote: `<span dir="ltr">${correct}</span>`,
+    explanation: half
+      ? [
+          'המחוג הארוך (האדום) על 6 – עברה חצי שעה (:30).',
+          `המחוג הקצר נמצא בין ${hour} ל-${wrap(hour + 1)}. השעה היא עדיין ${hour} – הוא רק בדרך ל-${wrap(hour + 1)}.`,
+          `→ <span dir="ltr">${correct}</span>`
+        ]
+      : [
+          'המחוג הארוך (האדום) על 12 – שעה עגולה (:00).',
+          `המחוג הקצר מצביע על ${hour}.`,
+          `→ <span dir="ltr">${correct}</span>`
+        ],
+    mistakes: mistakesFor(choices, correct, w => {
+      const wh = Number(w.split(':')[0]);
+      if (half && wh === wrap(hour + 1)) return 'כשהמחוג הקצר בין שני מספרים, השעה היא המספר שהוא כבר עבר.';
+      if (wh === hour) return 'השעה נכונה, אבל הדקות לא. הסתכלו על המחוג הארוך: על 12 זה :00, על 6 זה :30.';
+      return 'את השעה מראה המחוג הקצר, ואת הדקות – המחוג הארוך.';
+    }),
     options: choices.map(c => ({ id: c, label: c }))
   };
 }

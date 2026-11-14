@@ -1,6 +1,10 @@
 // Procedural Math Exercise Generator for Infinite Practice
 // Aligned with Israeli Ministry of Education (Preschool & Grades 3-4)
 import { shuffle, shuffleInPlace } from './random.js';
+import {
+  mistakesFor, explainMultiply, multiplyHint, explainDivide, divideHint, explainRemainder, remainderHint,
+  explainOrder, explainPlaceValue, placeValueHint, dotGrid
+} from './explain.js';
 
 
 const KID_EMOJIS = ['🍎', '⭐', '🚗', '🎈', '🐟', '⚽', '🐻', '🍓', '🧁', '🌸', '🐱', '🦋'];
@@ -234,6 +238,8 @@ export function generateAge8Multiplication() {
     soundCue: `כמה זה ${a} כפול ${b}?`,
     expectedAnswer: product,
     correctOptionId: String(product),
+    explanation: explainMultiply(a, b),
+    mistakes: mistakesFor(choices, product, w => multiplyHint(a, b, w)),
     options: choices.map(c => ({
       id: String(c),
       label: String(c)
@@ -266,6 +272,11 @@ export function generateAge8MissingFactor() {
     soundCue: `${a} כפול כמה שווה ${product}?`,
     expectedAnswer: b,
     correctOptionId: String(b),
+    explanation: [
+      `מחפשים: ${a} כפול כמה שווה ${product}? זה כמו ${ltrSpan(`${product} ÷ ${a}`)}`,
+      ...explainDivide(product, a, b).slice(1)
+    ],
+    mistakes: mistakesFor(choices, b, w => `בדיקה: ${ltrSpan(`${a} × ${w} = ${a * w}`)}, ולא ${product}.`),
     options: choices.map(c => ({
       id: String(c),
       label: String(c)
@@ -298,6 +309,8 @@ export function generateAge8Division() {
     soundCue: `כמה זה ${dividend} לחלק ל-${divisor}?`,
     expectedAnswer: quotient,
     correctOptionId: String(quotient),
+    explanation: explainDivide(dividend, divisor, quotient),
+    mistakes: mistakesFor(choices, quotient, w => divideHint(dividend, divisor, w)),
     options: choices.map(c => ({
       id: String(c),
       label: String(c)
@@ -316,8 +329,13 @@ export function numberChoices(correct, offsets, count = 4, min = 0) {
   return shuffleInPlace(choices);
 }
 
-export function choiceExercise({ idPrefix, title, instructionHebrew, formula, soundCue, correct, choices, feedbackNote }) {
+const ltrSpan = (s) => `<span dir="ltr">${s}</span>`;
+
+// explanation: steps shown after a wrong answer; mistakes: { optionId: hint } for specific wrong choices
+export function choiceExercise({ idPrefix, title, instructionHebrew, formula, soundCue, correct, choices, feedbackNote, explanation, mistakes }) {
   return {
+    explanation,
+    mistakes,
     id: `${idPrefix}_${Date.now()}_${Math.random()}`,
     category: 'math',
     type: 'arithmetic_choice',
@@ -366,6 +384,9 @@ export function generateGrade3DivisionWithRemainder() {
     expectedAnswer: key(quotient, remainder),
     correctOptionId: key(quotient, remainder),
     feedbackNote: `<span dir="ltr">${divisor} × ${quotient} + ${remainder} = ${dividend}</span>`,
+    explanation: explainRemainder(dividend, divisor, quotient, remainder),
+    mistakes: Object.fromEntries(options.filter(([q, r]) => q !== quotient || r !== remainder)
+      .map(([q, r]) => [key(q, r), remainderHint(dividend, divisor, q, r)])),
     options: options.map(([q, r]) => ({ id: key(q, r), label: label(q, r) }))
   };
 }
@@ -396,7 +417,9 @@ export function placeValue(digits, idPrefix) {
     soundCue: `מהי ספרת ה${PLACE_NAMES[place]} במספר ${number}?`,
     correct,
     choices: shuffleInPlace(choices),
-    feedbackNote: `ספרת ה${PLACE_NAMES[place]}: ${correct}`
+    feedbackNote: `ספרת ה${PLACE_NAMES[place]}: ${correct}`,
+    explanation: explainPlaceValue(number, place),
+    mistakes: mistakesFor(choices, correct, w => placeValueHint(number, place, w))
   });
 }
 
@@ -409,10 +432,12 @@ export function generateGrade3OrderOfOperations() {
   const a = randInt(2, 20);
   const b = randInt(2, 9);
   const c = randInt(2, 9);
+  const p = b * c;
   const forms = [
-    { formula: `${a} + ${b} × ${c}`, correct: a + b * c, leftToRight: (a + b) * c },
-    { formula: `${b} × ${c} + ${a}`, correct: b * c + a, leftToRight: b * (c + a) },
-    { formula: `${a + b * c} - ${b} × ${c}`, correct: a, leftToRight: (a + b * c - b) * c }
+    { formula: `${a} + ${b} × ${c}`, correct: a + p, leftToRight: (a + b) * c, rest: `${a} + ${p}` },
+    // "b × c + a" read left to right is also correct, so the classic mistake here is adding first: b × (c + a)
+    { formula: `${b} × ${c} + ${a}`, correct: p + a, leftToRight: b * (c + a), rest: `${p} + ${a}` },
+    { formula: `${a + p} - ${b} × ${c}`, correct: a, leftToRight: (a + p - b) * c, rest: `${a + p} - ${p}` }
   ];
   const form = pickRandom(forms);
   const choices = [form.correct];
@@ -427,7 +452,11 @@ export function generateGrade3OrderOfOperations() {
     formula: `${form.formula} = ?`,
     soundCue: 'פתרו את התרגיל. זכרו, כפל לפני חיבור וחיסור.',
     correct: form.correct,
-    choices: shuffleInPlace(choices)
+    choices: shuffleInPlace(choices),
+    explanation: explainOrder({ first: `${b} × ${c}`, firstValue: p, rest: form.rest, correct: form.correct }),
+    mistakes: mistakesFor(choices, form.correct, w => (w === form.leftToRight
+      ? 'עשיתם קודם את החיבור או החיסור. צריך קודם את הכפל!'
+      : ''))
   });
 }
 
@@ -438,6 +467,8 @@ export function generateGrade4Multiplication() {
   const a = Math.random() < 0.6 ? randInt(12, 99) : randInt(101, 999);
   const b = randInt(3, 9);
   const product = a * b;
+  const choices = numberChoices(product, [-b, b, -10, 10, -100, 100], 4, 1);
+  const parts = [...String(a)].map((d, i, arr) => Number(d) * 10 ** (arr.length - 1 - i)).filter(Boolean);
   return choiceExercise({
     idPrefix: 'math_g4_mult',
     title: 'כפל במאונך',
@@ -445,7 +476,19 @@ export function generateGrade4Multiplication() {
     formula: `${a} × ${b} = ?`,
     soundCue: `כמה זה ${a} כפול ${b}?`,
     correct: product,
-    choices: numberChoices(product, [-b, b, -10, 10, -100, 100], 4, 1)
+    choices,
+    // Split by place value: 347 × 6 = 300 × 6 + 40 × 6 + 7 × 6
+    explanation: [
+      'מפרקים את המספר לפי ערך המקום, וכופלים כל חלק:',
+      ...parts.map(p => ltrSpan(`${p} × ${b} = ${(p * b).toLocaleString('en-US')}`)),
+      ltrSpan(`${parts.map(p => (p * b).toLocaleString('en-US')).join(' + ')} = ${product.toLocaleString('en-US')}`)
+    ],
+    mistakes: mistakesFor(choices, product, w => {
+      const d = Math.abs(w - product);
+      if (d === 10 || d === 100) return 'כמעט! טעות בנשיאה: כשתוצאה של עמודה גדולה מ-9, מעבירים את העשרות לעמודה הבאה.';
+      if (d === b) return `זה ${ltrSpan(`${w / b} × ${b}`)}. בדקו שוב את ספרת האחדות.`;
+      return '';
+    })
   });
 }
 
@@ -454,6 +497,7 @@ export function generateGrade4LongDivision() {
   const divisor = randInt(2, 9);
   const quotient = randInt(12, 120);
   const dividend = divisor * quotient;
+  const choices = numberChoices(quotient, [-1, 1, -10, 10, -2, 2], 4, 1);
   return choiceExercise({
     idPrefix: 'math_g4_div',
     title: 'חילוק ארוך',
@@ -461,9 +505,17 @@ export function generateGrade4LongDivision() {
     formula: `${dividend} ÷ ${divisor} = ?`,
     soundCue: `כמה זה ${dividend} לחלק ל-${divisor}?`,
     correct: quotient,
-    choices: numberChoices(quotient, [-1, 1, -10, 10, -2, 2], 4, 1),
-    feedbackNote: `<span dir="ltr">${quotient} × ${divisor} = ${dividend}</span>`
+    choices,
+    feedbackNote: `<span dir="ltr">${quotient} × ${divisor} = ${dividend}</span>`,
+    explanation: explainDivide(dividend, divisor, quotient),
+    mistakes: mistakesFor(choices, quotient, w => divideHint(dividend, divisor, w))
   });
+}
+
+// "4 + 1 + 7 = 12" — the digit sum, written out
+function digitSum(n) {
+  const digits = [...String(n)].map(Number);
+  return ltrSpan(`${digits.join(' + ')} = ${digits.reduce((s, x) => s + x, 0)}`);
 }
 
 // Divisibility by 3, 6 or 9: exactly one of the numbers divides evenly
@@ -483,7 +535,19 @@ export function generateGrade4Divisibility() {
     soundCue: `איזה מספר מתחלק ב-${d} בלי שארית?`,
     correct,
     choices: shuffleInPlace(choices),
-    feedbackNote: `<span dir="ltr">${correct} ÷ ${d} = ${correct / d}</span>`
+    feedbackNote: `<span dir="ltr">${correct} ÷ ${d} = ${correct / d}</span>`,
+    explanation: [
+      d === 6
+        ? 'מספר מתחלק ב-6 אם הוא זוגי וגם סכום הספרות שלו מתחלק ב-3.'
+        : `מספר מתחלק ב-${d} אם סכום הספרות שלו מתחלק ב-${d}.`,
+      `${correct}: ${digitSum(correct)}`,
+      ltrSpan(`${correct} ÷ ${d} = ${correct / d}`) + ' ✔️'
+    ],
+    mistakes: mistakesFor(choices, correct, w => {
+      if (d === 6 && w % 2 === 1 && w % 3 === 0) return `${w} מתחלק ב-3, אבל הוא אי-זוגי, אז הוא לא מתחלק ב-6.`;
+      if (d === 9 && w % 3 === 0) return `${w}: ${digitSum(w)}. מתחלק ב-3, אבל לא ב-9.`;
+      return `${w}: ${digitSum(w)}. לא מתחלק ב-${d === 6 ? 3 : d}.`;
+    })
   });
 }
 
@@ -518,8 +582,34 @@ export function generateGrade4RectangleMeasure() {
     choices: shuffleInPlace(choices),
     feedbackNote: askArea
       ? `<span dir="ltr">${w} × ${h} = ${area}</span>`
-      : `<span dir="ltr">${w} + ${h} + ${w} + ${h} = ${perimeter}</span>`
+      : `<span dir="ltr">${w} + ${h} + ${w} + ${h} = ${perimeter}</span>`,
+    explanation: askArea
+      ? [
+          'שטח = כמה ריבועים של סמ"ר נכנסים במלבן:',
+          `${h} שורות, ובכל שורה ${w} ריבועים`,
+          ltrSpan(`${w} × ${h} = ${area}`) + ' סמ"ר'
+        ]
+      : [
+          'היקף = הולכים מסביב למלבן ומחברים את כל 4 הצלעות:',
+          ltrSpan(`${w} + ${h} + ${w} + ${h} = ${perimeter}`) + ' ס"מ',
+          `או בקיצור: ${ltrSpan(`(${w} + ${h}) × 2 = ${perimeter}`)}`
+        ],
+    mistakes: mistakesFor(choices, correct, c => {
+      if (c === other) return askArea ? 'זה ההיקף (מסביב). שטח זה מה שבפנים: כופלים אורך ברוחב.' : 'זה השטח (מה שבפנים). היקף זה הדרך מסביב: מחברים את כל הצלעות.';
+      if (c === w + h) return askArea ? 'חיברתם את הצלעות. בשטח כופלים אורך ברוחב.' : 'חיברתם רק 2 צלעות. למלבן יש 4 צלעות!';
+      return '';
+    })
   });
+}
+
+// A bar split into `den` equal parts with the first `num` colored, each part labeled with its value
+function barSvg(den, num, partValue) {
+  const cell = Math.min(40, Math.floor(280 / den));
+  const cells = Array.from({ length: den }, (_, i) =>
+    `<rect x="${i * cell}" y="0" width="${cell}" height="30" fill="${i < num ? '#86efac' : '#fff'}" stroke="#312e81" stroke-width="2"/>` +
+    `<text x="${i * cell + cell / 2}" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">${partValue}</text>`
+  ).join('');
+  return `<svg dir="ltr" viewBox="-2 -2 ${den * cell + 4} 34" width="${den * cell + 4}" height="34" style="display:inline-block" aria-hidden="true">${cells}</svg>`;
 }
 
 // Fraction of a quantity: "3/4 מ-12"
@@ -528,6 +618,8 @@ export function generateGrade4FractionOfQuantity() {
   const num = randInt(1, den - 1);
   const whole = den * randInt(2, 10);
   const correct = (whole / den) * num;
+  const part = whole / den;
+  const choices = numberChoices(correct, [-part, part, -1, 1, 2], 4, 1);
   return choiceExercise({
     idPrefix: 'math_g4_fracq',
     title: 'שבר מכמות',
@@ -536,8 +628,18 @@ export function generateGrade4FractionOfQuantity() {
     formula: `<span dir="rtl"><span dir="ltr">${num}/${den}</span> מ-${whole} = ?</span>`,
     soundCue: `כמה זה ${num} חלקי ${den} מ-${whole}?`,
     correct,
-    choices: numberChoices(correct, [-(whole / den), whole / den, -1, 1, 2], 4, 1),
-    feedbackNote: `<span dir="ltr">${whole} ÷ ${den} × ${num} = ${correct}</span>`
+    choices,
+    feedbackNote: `<span dir="ltr">${whole} ÷ ${den} × ${num} = ${correct}</span>`,
+    explanation: [
+      `מחלקים את ${whole} ל-${den} חלקים שווים: ${ltrSpan(`${whole} ÷ ${den} = ${part}`)}`,
+      `${barSvg(den, num, part)}`,
+      num === 1 ? `לוקחים חלק אחד → ${correct}` : `לוקחים ${num} חלקים: ${ltrSpan(`${part} × ${num} = ${correct}`)}`
+    ],
+    mistakes: mistakesFor(choices, correct, c => {
+      if (c === part && num > 1) return `זה רק חלק אחד (${ltrSpan(`1/${den}`)}). צריך ${num} חלקים.`;
+      if (c === correct + part || c === correct - part) return `זה ${ltrSpan(`${c / part}/${den}`)}. ספרו שוב כמה חלקים לוקחים: ${num}.`;
+      return '';
+    })
   });
 }
 
@@ -566,6 +668,22 @@ export function generateGrade4EquivalentFraction() {
     expectedAnswer: correct,
     correctOptionId: correct,
     feedbackNote: `<span dir="ltr">${base[0]}/${base[1]} = ${correct}</span>`,
+    explanation: [
+      'כדי לקבל שבר שווה, כופלים את המונה ואת המכנה באותו מספר:',
+      ltrSpan(`${base[0]} × ${k} = ${base[0] * k}`) + ' (מונה, למעלה)',
+      ltrSpan(`${base[1]} × ${k} = ${base[1] * k}`) + ' (מכנה, למטה)',
+      `→ ${ltrSpan(`${base[0]}/${base[1]} = ${correct}`)}`
+    ],
+    mistakes: Object.fromEntries([...wrongs].map(wf => {
+      const [n, d] = wf.split('/').map(Number);
+      if (d % base[1] === 0 && n !== (d / base[1]) * base[0]) {
+        return [wf, `המכנה הוכפל ב-${d / base[1]}, אבל המונה לא. צריך לכפול את שניהם באותו מספר.`];
+      }
+      if (n % base[0] === 0 && d !== (n / base[0]) * base[1]) {
+        return [wf, `המונה הוכפל ב-${n / base[0]}, אבל המכנה לא. צריך לכפול את שניהם באותו מספר.`];
+      }
+      return [wf, 'המונה והמכנה לא הוכפלו באותו מספר.'];
+    })),
     options: choices.map(c => ({ id: c, label: `<span dir="ltr">${c}</span>` }))
   };
 }

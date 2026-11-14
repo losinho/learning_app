@@ -12,7 +12,7 @@
 2. **Ministry of Education Curriculum:**
    - **Age 5 (גן חובה):** Phonological awareness, initial sounds (צליל פותח), vocalized sight words (מילים מנוקדות), quantity comparison (`< > =`), visual addition/subtraction, English visual words & letter matching.
    - **Age 8–9 (כיתות ג'-ד'):** Reading comprehension (הבנת הנקרא) with educational texts on Israeli history (Ben-Gurion, Ilan Ramon) and nature/science (Dead Sea, Hoopoe bird), Hebrew grammar (שורשים ויחיד/רבים), times tables (לוח הכפל), multi-step word problems (בעיות מילוליות), fractions (שברים פשוטים), and English Band I sentence completion.
-3. **Advance on Error with Educational Feedback:** On a mistake, the app highlights the error in red, reveals the correct answer in green so the child learns from the error, and automatically advances to the next question (or allows instant manual tap).
+3. **Learn from Mistakes:** On a mistake, the app highlights the error in red, reveals the correct answer in green and math questions show a hint about the specific mistake plus a short step-by-step explanation (💡 בואו נבין). The app waits until the child taps "הבנתי" before moving on.
 4. **Parent Analytics & Session Logs (דוח הורים):** Every learning session is logged per child with exact questions, answers, and accuracy. Parents can open the secured **Parent Dashboard (📊 להורים)** to view accuracy by subject, identify problem areas (תחומים לחיזוק), inspect detailed question-by-question logs, and read pedagogical tips.
 5. **Multi-Child Profiles:** Kids can create their own profiles with fun avatars (🦁, 🐬, 🚀, 🦄, 🐼), choose their age, and track stars and progress independently.
 6. **Child-Friendly Audio Feedback:**

@@ -13,6 +13,24 @@ function bigLabelClass(label) {
   return 'text-2xl sm:text-3xl py-3 leading-relaxed';
 }
 
+// After a wrong answer: a hint about the specific mistake (exercise.mistakes[answer]) and the
+// step-by-step "let's understand" explanation (exercise.explanation). Empty when the exercise has neither.
+function explanationHtml(exercise, answer) {
+  const hint = exercise.mistakes && exercise.mistakes[String(answer)];
+  const steps = Array.isArray(exercise.explanation) ? exercise.explanation : [];
+  if (!hint && !steps.length) return '';
+  const hintHtml = hint
+    ? `<div class="mb-2 p-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-amber-900 text-lg">🔍 ${hint}</div>`
+    : '';
+  const stepsHtml = steps.length
+    ? `<div class="p-3 rounded-xl bg-white border-2 border-indigo-200 text-indigo-900">
+        <div class="text-lg font-black mb-1.5">💡 בואו נבין:</div>
+        ${steps.map(s => `<div class="text-lg font-bold leading-relaxed my-1">${s}</div>`).join('')}
+      </div>`
+    : '';
+  return `<div class="mt-3 text-center">${hintHtml}${stepsHtml}</div>`;
+}
+
 export function renderExerciseCard(container, exercise, onComplete) {
   let hasAnswered = false;
   let enteredNumber = '';
@@ -533,14 +551,9 @@ export function renderExerciseCard(container, exercise, onComplete) {
   const nextBtnContainer = container.querySelector('#next-btn-container');
   const nextBtn = container.querySelector('#btn-next-exercise');
 
-  let autoAdvanceTimer = null;
   let lastAttemptResult = null;
 
   function triggerNext() {
-    if (autoAdvanceTimer) {
-      clearTimeout(autoAdvanceTimer);
-      autoAdvanceTimer = null;
-    }
     if (onComplete) {
       onComplete(exercise, lastAttemptResult || { isCorrect: false });
     }
@@ -604,12 +617,13 @@ export function renderExerciseCard(container, exercise, onComplete) {
 
       nextBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
-      // ON ERROR: Play error sound, highlight wrong answer in red, show correct answer in green, and move to next question!
+      // ON ERROR: mark the wrong answer red, the correct one green, and explain what went wrong.
+      // No auto-advance: the child moves on with "הבנתי" after reading the explanation.
       sfx.playError();
       feedbackBanner.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-800');
-      feedbackBanner.innerHTML = `❌ לא מדויק. התשובה הנכונה סומנה בירוק. ממשיכים הלאה! 💪${exercise.isChallenge ? `<div class="mt-1">⭐ זו הייתה שאלת אתגר מהכיתה הבאה — כל הכבוד על הניסיון!</div>` : ''}${translationHtml}`;
+      feedbackBanner.innerHTML = `❌ לא נורא, טועים כדי ללמוד! התשובה הנכונה סומנה בירוק.${exercise.isChallenge ? `<div class="mt-1">⭐ זו הייתה שאלת אתגר מהכיתה הבאה — כל הכבוד על הניסיון!</div>` : ''}${explanationHtml(exercise, submissionValue) || translationHtml}`;
       nextBtnContainer.classList.remove('hidden');
-      nextBtn.innerHTML = `התרגיל הבא! ➡️`;
+      nextBtn.innerHTML = `הבנתי! ממשיכים ➡️`;
 
       if (targetElement) {
         targetElement.classList.add('selected-wrong');
@@ -651,11 +665,6 @@ export function renderExerciseCard(container, exercise, onComplete) {
       });
 
       nextBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-      // Automatically advance to the next question after 2 seconds
-      autoAdvanceTimer = setTimeout(() => {
-        triggerNext();
-      }, 2000);
     }
   }
 
