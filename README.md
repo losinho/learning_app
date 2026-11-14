@@ -160,7 +160,10 @@ learning_app/
     │   └── speech.js            # Web Speech API pronunciation (he-IL & en-US)
     ├── engine/
     │   ├── validator.js         # Deterministic offline evaluation engine (zero LLM calls)
-    │   └── procedural_math.js   # Dynamic infinite math generator (< > =, + -, times tables)
+    │   ├── procedural_math.js   # Dynamic infinite math generator (< > =, + -, times tables)
+    │   ├── grade3_math.js       # Grade 3 new-program topics (rounding, columns, angles, time, charts…)
+    │   ├── grade4_math.js       # Grade 4 new-program topics (fractions, quadrilaterals, calendar…)
+    │   └── explain.js           # Step-by-step explanations and mistake hints after a wrong answer
     ├── components/
     │   ├── header.js            # Active profile badge, stars counter, parent report, audio toggles
     │   ├── subjectNav.js        # Subject switcher tabs (עברית, חשבון, אנגלית)

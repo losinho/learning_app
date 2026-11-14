@@ -129,12 +129,23 @@ Large reading answers scale with word length and never wrap (a broken word would
 | 3 + 4 | Hebrew | לשון: שם המספר | `image_word_match` (text answers) | generated | "___ בָּנוֹת" → שָׁלוֹשׁ / שְׁלוֹשָׁה (3–10); includes nouns whose ending hides their gender (צִפֳּרִים feminine, עֶפְרוֹנוֹת masculine). |
 | 3 + 4 | Hebrew | לשון: צירוף סמיכות | `image_word_match` (text answers) | generated | "עֻגָּה שֶׁל שׁוֹקוֹלָד" → עֻגַּת שׁוֹקוֹלָד (7 phrases). |
 | 3 | Math | לוח הכפל, השלמת גורם חסר, חילוק עד 100 | `arithmetic_choice` | generated | Times tables 2–10, missing factor, division without remainder. |
-| 3 | Math | חילוק עם שארית | `arithmetic_choice` | generated | Dividend ≤ 100, one-digit divisor; every option has a proper remainder (no wrong option is secretly true). Answer shown as quotient + "שארית r". |
 | 3 | Math | ערך המקום | `arithmetic_choice` | generated | "Which digit is in the hundreds place of 4,382?" (numbers up to 10,000). |
 | 3 | Math | סדר פעולות החשבון | `arithmetic_choice` | generated | a + b × c and similar; the left-to-right result is always one of the wrong options. |
 | 3 | Math | Word problems | `numeric_input` | curated | 3 fixed items. |
 | 3 | Math | מדידת שטח, השוואת שטחים | `arithmetic_choice` | generated | A connected shape of 4–12 unit squares on a grid (each square = 1 סמ"ר) → its area; the perimeter count is one of the wrong options. Two shapes → which has the bigger area, or equal (`src/engine/area.js`). New math program, grade 3. |
-| 4 | Math | כפל במאונך, חילוק ארוך | `arithmetic_choice` | generated | 2–3 digit × 1 digit; long division by 1 digit (no remainder). |
+| 3 | Math | חיבור וחיסור במאונך | `arithmetic_choice` | generated | Within 10,000. The explanation shows the column layout with carries/borrows. Wrong options: forgetting a carry, "small digit from big digit", one column off (`src/engine/grade3_math.js`, like all grade-3 rows below). |
+| 3 | Math | עיגול מספרים, אומדן | `arithmetic_choice` | generated | Round to tens / hundreds / thousands (a quarter exactly on the midpoint, number line in the explanation); estimate a sum or difference by rounding to hundreds. |
+| 3 | Math | כפל וחילוק ב-10/100/1,000, בעשרות ובמאות שלמות, חוק הפילוג | `arithmetic_choice` | generated | 37 × 100, 4,200 ÷ 100, 6 × 40, 2,400 ÷ 6, 23 × 4 = 20 × 4 + 3 × 4. |
+| 3 | Math | סוגריים, 0 ו-1, משוואות | `arithmetic_choice` | generated | (5 + 3) × 4; n × 0, n ÷ n …; "? + 200 = 300 + 148" solved by comparing both sides, missing addend. |
+| 3 | Math | השוואת מספרים, סדרות ודילוגים, גימטרייה | `arithmetic_choice` | generated | < > = up to 10,000; skip counting by 20/25/50/200/250/500/1,000; letter values and word values. |
+| 3 | Math | סוגי זוויות, סוגי משולשים | `arithmetic_choice` (word answers) | generated | Drawn angle → acute / right / obtuse / straight; drawn triangle → acute / right / obtuse. |
+| 3 | Math | שעות ודקות, משך זמן | `arithmetic_choice` | generated | Analog clock to 5 minutes (wrong options: minute number read as minutes, next hour, swapped hands); "from 8:45 to 10:15 — how long?". |
+| 3 + 4 | Math | חקר נתונים | `arithmetic_choice` | generated | Bar chart or pictogram (icon = 2 or 5): most/least, how many, how many more, total. Grade 4 adds pie charts (halves, quarters, eighths of a class). |
+| 4 | Math | כפל במאונך, חילוק ארוך, חילוק עם שארית | `arithmetic_choice` | generated | 2–3 digit × 1 digit; long division by 1 digit (no remainder); division with remainder (dividend ≤ 100, every option has a proper remainder). |
+| 4 | Math | כפל דו-ספרתי, אומדן מכפלה, 0 ו-1 | `arithmetic_choice` | generated | 40 × 30; 23 × 14 = 23 × 10 + 23 × 4; 17 × 32 ≈ 20 × 30; "n ÷ 0 = אי אפשר" (`src/engine/grade4_math.js`, like the rows below). |
+| 4 | Math | שברים | `arithmetic_choice` | generated | Shaded part of a circle/bar, a point on a 0–1 number line, comparing (same denominator / same numerator), adding and subtracting with equal denominators (mixed numbers), whole × fraction, fraction of a quantity, equivalent fractions. Fractions are shown stacked (numerator over denominator). |
+| 4 | Math | מרובעים, ישרים מקבילים ומאונכים | `arithmetic_choice` (word answers) | generated | Most exact name of a drawn quadrilateral (a square is also a rectangle — the hint says so); parallel / perpendicular / crossing. |
+| 4 | Math | עיגול והשוואה עד מיליון, לוח שנה | `arithmetic_choice` | generated | Rounding to hundreds … hundred-thousands; < > = up to 1,000,000; weeks ↔ days, day of the week in N days, days in a month. |
 | 4 | Math | ערך המקום | `arithmetic_choice` | generated | Numbers up to 1,000,000 (up to hundred-thousands place). |
 | 4 | Math | סימני התחלקות | `arithmetic_choice` | generated | Exactly one of 3 numbers divides by 3, 6 or 9. |
 | 4 | Math | שטח / היקף מלבן | `arithmetic_choice` | generated | Rectangle drawn to scale with side lengths; mixing up area and perimeter is always one of the wrong options. |
@@ -413,7 +424,7 @@ Because there is no gan curriculum for English, the right approach is listening 
 
 **Age 8–9**
 1. ~~Content to reach 20-question rounds~~ (done 2026-10-16: generated grammar for grades 3–4 Hebrew and grade-4 English; rounds mix about half curated, half generated). Still open: grade-3 Hebrew items with shorter texts, so Hebrew could split by grade too; more reading passages.
-2. Math: division with remainder, place value, order of operations, more two-step problems, fractions (numerator and denominator, equivalents), angles, shapes, area and perimeter, units.
+2. Math: ~~the new-program topics of grades 3–4~~ (done 2026-11-14, see §3.2; rounds shuffle the topic order because there are more topics than questions). Still open: more two-step word problems, reading/writing numbers in words, box nets (grade 3), length/weight unit conversions, properties of rhombus/parallelogram/trapezoid beyond naming, digital clocks.
 3. Hebrew: singular/plural/dual, gender and number agreement, number words (שלושה / שלוש), סמיכות, main-idea questions, a short poem with comprehension questions.
 4. English: check the word lists against the official Pre Band I / Band I Excel; add alphabet and phonics for grade 3.
 5. Add grade 5 (would give grade-4 children challenges). ~~Grade 1~~, ~~grade 2~~ (done 2026-10-16).

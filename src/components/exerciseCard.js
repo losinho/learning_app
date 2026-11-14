@@ -13,6 +13,14 @@ function bigLabelClass(label) {
   return 'text-2xl sm:text-3xl py-3 leading-relaxed';
 }
 
+// Text size for answer buttons: long numbers ("12,345") get a smaller font so 4 buttons fit in a row
+function choiceLabelClass(label) {
+  const text = String(label).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  if (text.length <= 4) return 'text-3xl sm:text-4xl';
+  if (text.length <= 7) return 'text-2xl sm:text-3xl';
+  return 'text-xl sm:text-2xl';
+}
+
 // After a wrong answer: a hint about the specific mistake (exercise.mistakes[answer]) and the
 // step-by-step "let's understand" explanation (exercise.explanation). Empty when the exercise has neither.
 function explanationHtml(exercise, answer) {
@@ -189,7 +197,7 @@ export function renderExerciseCard(container, exercise, onComplete) {
             ${exercise.options.map(opt => `
               <button 
                 data-id="${opt.id}" 
-                class="option-card choice-pill btn-tactile py-4 px-3 text-center border-3 font-black text-3xl sm:text-4xl text-slate-800 cursor-pointer">
+                class="option-card choice-pill btn-tactile py-4 px-2 text-center border-3 font-black ${choiceLabelClass(opt.label)} text-slate-800 cursor-pointer">
                 ${opt.label}
               </button>
             `).join('')}
@@ -458,6 +466,12 @@ export function renderExerciseCard(container, exercise, onComplete) {
 
     </div>
   `;
+
+  // Answer buttons that don't fit 4 in a row (long numbers, Hebrew words) get 2 wider columns instead
+  const choiceGrid = container.querySelector('.option-card.choice-pill')?.parentElement;
+  if (choiceGrid && [...choiceGrid.children].some(b => b.scrollWidth > b.clientWidth + 1)) {
+    choiceGrid.classList.remove('sm:grid-cols-4');
+  }
 
   // --- ATTACH EVENT HANDLERS --- //
 
