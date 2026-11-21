@@ -30,7 +30,7 @@ const THUMB_VIEWBOX = {
   background: VIEWBOX
 };
 
-const star = (cx, cy, r, fill) => {
+export const star = (cx, cy, r, fill) => {
   const points = Array.from({ length: 10 }, (_, i) => {
     const radius = i % 2 ? r * 0.45 : r;
     const angle = (Math.PI / 5) * i - Math.PI / 2;
@@ -38,11 +38,11 @@ const star = (cx, cy, r, fill) => {
   });
   return `<polygon points="${points.join(' ')}" fill="${fill}"/>`;
 };
-const heart = (cx, cy, s, fill) => `<path d="M${cx} ${cy + s} C${cx - 2 * s} ${cy - 0.2 * s} ${cx - s} ${cy - 1.2 * s} ${cx} ${cy - 0.4 * s} C${cx + s} ${cy - 1.2 * s} ${cx + 2 * s} ${cy - 0.2 * s} ${cx} ${cy + s} Z" fill="${fill}"/>`;
-const circle = (cx, cy, r, fill, more = '') => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ${more}/>`;
-const rect = (x, y, w, h, fill, rx = 0) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}"/>`;
-const path = (d, fill, more = '') => `<path d="${d}" fill="${fill}" ${more}/>`;
-const line = (d, stroke, width = 3) => `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"/>`;
+export const heart = (cx, cy, s, fill) => `<path d="M${cx} ${cy + s} C${cx - 2 * s} ${cy - 0.2 * s} ${cx - s} ${cy - 1.2 * s} ${cx} ${cy - 0.4 * s} C${cx + s} ${cy - 1.2 * s} ${cx + 2 * s} ${cy - 0.2 * s} ${cx} ${cy + s} Z" fill="${fill}"/>`;
+export const circle = (cx, cy, r, fill, more = '') => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ${more}/>`;
+export const rect = (x, y, w, h, fill, rx = 0) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}"/>`;
+export const path = (d, fill, more = '') => `<path d="${d}" fill="${fill}" ${more}/>`;
+export const line = (d, stroke, width = 3) => `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"/>`;
 
 // --- Clothes helpers ---
 const TORSO = 'M68 126 Q68 116 82 116 H118 Q132 116 132 126 V186 H68 Z';
@@ -228,7 +228,7 @@ function drawFace(gender) {
 
 // look = { gender, skin (index), hair (index), equipped: { slot: itemId } }.
 // options.headOnly: a small head for the header, without background and pet.
-export function characterSvg(look, { className = '', style = '', headOnly = false } = {}) {
+export function characterSvg(look, { className = '', style = '', headOnly = false, noBackground = false, x, y, width, height } = {}) {
   const gender = look.gender === 'girl' ? 'girl' : 'boy';
   const skin = SKIN_TONES[look.skin] || SKIN_TONES[0];
   const hair = HAIR_COLORS[look.hair] || HAIR_COLORS[0];
@@ -236,7 +236,7 @@ export function characterSvg(look, { className = '', style = '', headOnly = fals
   const draw = slot => worn(slot)?.draw() || '';
 
   const layers = [
-    headOnly ? '' : draw('background'),
+    headOnly || noBackground ? '' : draw('background'),
     headOnly ? '' : worn('top')?.back?.() || '',
     drawBackHair(gender, hair),
     headOnly ? '' : rect(78, 180, 19, 52, skin, 8) + rect(103, 180, 19, 52, skin, 8),
@@ -253,7 +253,9 @@ export function characterSvg(look, { className = '', style = '', headOnly = fals
   ];
 
   const viewBox = headOnly ? '36 -2 128 128' : VIEWBOX;
-  return `<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" class="${className}" style="${style}" aria-hidden="true">${layers.join('')}</svg>`;
+  // x/y/width/height place the character inside another SVG (the house room)
+  const placement = width ? ` x="${x}" y="${y}" width="${width}" height="${height}"` : '';
+  return `<svg viewBox="${viewBox}"${placement} xmlns="http://www.w3.org/2000/svg" class="${className}" style="${style}" aria-hidden="true">${layers.join('')}</svg>`;
 }
 
 // One item alone, for its shop tile

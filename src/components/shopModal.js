@@ -1,10 +1,16 @@
-// Star shop: spend stars on clothes and accessories for the child's drawn boy/girl character.
+// Star shop: spend stars on clothes and accessories for the child's drawn boy/girl character,
+// or on a house and the furniture inside it (the character stands in the room).
 // Tapping an item tries it on; an item not yet bought is only kept once it is paid for.
 import { storage } from '../storage.js';
 import { sfx } from '../audio/sfx.js';
 import { SHOP_SLOTS, SETS_TAB, SKIN_TONES, HAIR_COLORS, characterSvg, itemThumbSvg, itemsForSlot, setsFor, shopItem } from '../engine/character.js';
+import { HOUSES_TAB, HOUSE_SLOTS, houseItem, houseItemsForSlot, houseThumbSvg, roomSvg } from '../engine/house.js';
 
 const LOOK_TAB = 'look';
+const MODES = [
+  { key: 'character', label: 'הדמות שלי', emoji: '👕' },
+  { key: 'house', label: 'הבית שלי', emoji: '🏠' }
+];
 // Slots a child may leave empty
 const OPTIONAL_SLOTS = ['hat', 'glasses', 'pet'];
 
@@ -28,19 +34,46 @@ export function renderShopModal(modalContainer, onClosed) {
     return;
   }
 
+  let mode = 'character';
   let activeTab = SETS_TAB.key;
-  let tryOn = null; // { name, ids } of an item or outfit shown on the character but not fully bought
+  let tryOn = null; // { name, ids } of an item, outfit or house shown in the preview but not fully bought
 
   const look = () => {
     const character = storage.getCharacter(profile);
     const equipped = { ...character.equipped };
-    if (tryOn) tryOn.ids.forEach(id => { equipped[shopItem(id).slot] = id; });
+    if (tryOn && mode === 'character') tryOn.ids.forEach(id => { equipped[shopItem(id).slot] = id; });
     return { gender: profile.gender, skin: character.skin, hair: character.hair, equipped };
   };
 
-  const isOwned = (item) => item.cost === 0 || storage.getCharacter(profile).owned.includes(item.id);
+  // The house as the preview shows it, with the tried-on house or furniture in place
+  const houseLook = () => {
+    const house = storage.getHouse(profile);
+    const state = { house: house.house, placed: { ...house.placed } };
+    if (tryOn && mode === 'house') {
+      tryOn.ids.map(houseItem).forEach(item => {
+        if (item.slot === HOUSES_TAB.key) state.house = item.id;
+        else state.placed[item.slot] = item.id;
+      });
+    }
+    return state;
+  };
+
+  const isOwned = (item) => item.cost === 0 || (mode === 'house' ? storage.getHouse(profile) : storage.getCharacter(profile)).owned.includes(item.id);
   // Pieces already owned cost nothing
   const priceOf = (items) => items.filter(item => !isOwned(item)).reduce((sum, item) => sum + item.cost, 0);
+  const lookup = (id) => (mode === 'house' ? houseItem(id) : shopItem(id));
+
+  // Moving into a house or putting furniture in the room
+  const placeHouseItems = (items) => {
+    const house = storage.getHouse(profile);
+    const placed = { ...house.placed };
+    let current = house.house;
+    items.forEach(item => {
+      if (item.slot === HOUSES_TAB.key) current = item.id;
+      else placed[item.slot] = item.id;
+    });
+    storage.updateHouse({ house: current, placed });
+  };
 
   const equipItems = (items) => {
     const equipped = { ...storage.getCharacter(profile).equipped };
@@ -61,6 +94,7 @@ export function renderShopModal(modalContainer, onClosed) {
               <button id="btn-close-shop" class="text-slate-400 hover:text-slate-700 text-2xl font-bold p-1 leading-none cursor-pointer">&times;</button>
             </div>
           </div>
+          <div id="shop-modes" class="grid grid-cols-2 gap-1.5 mb-2"></div>
           <div id="shop-preview" class="flex justify-center"></div>
           <div id="shop-action" class="mt-2"></div>
         </div>
@@ -75,25 +109,48 @@ export function renderShopModal(modalContainer, onClosed) {
 
   const refresh = () => {
     modalContainer.querySelector('#shop-balance').textContent = storage.getStarBalance(profile);
-    modalContainer.querySelector('#shop-preview').innerHTML = characterSvg(look(), {
-      className: 'rounded-2xl border-2 border-slate-200',
-      style: 'height:min(30vh,200px)'
-    });
+    renderModes();
+    modalContainer.querySelector('#shop-preview').innerHTML = mode === 'house'
+      ? roomSvg(houseLook(), look(), { className: 'rounded-2xl border-2 border-slate-200 max-w-full', style: 'height:min(30vh,200px)' })
+      : characterSvg(look(), {
+        className: 'rounded-2xl border-2 border-slate-200',
+        style: 'height:min(30vh,200px)'
+      });
     renderAction();
     renderTabs();
-    if (activeTab === LOOK_TAB) renderLookTab();
+    if (mode === 'house') renderHouseItems();
+    else if (activeTab === LOOK_TAB) renderLookTab();
     else if (activeTab === SETS_TAB.key) renderSets();
     else renderItems();
   };
 
-  // Under the character: what the tried-on item or outfit costs, or how many stars are still missing
+  const renderModes = () => {
+    const mount = modalContainer.querySelector('#shop-modes');
+    mount.innerHTML = MODES.map(m => `
+      <button data-mode="${m.key}" class="shop-mode py-1.5 rounded-xl border-2 font-black text-sm cursor-pointer ${m.key === mode ? 'bg-amber-400 text-amber-950 border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-amber-50'}">
+        ${m.emoji} ${m.label}
+      </button>
+    `).join('');
+    mount.querySelectorAll('.shop-mode').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.mode === mode) return;
+        mode = btn.dataset.mode;
+        tryOn = null;
+        activeTab = mode === 'house' ? (storage.getHouse(profile).house ? HOUSE_SLOTS[0].key : HOUSES_TAB.key) : SETS_TAB.key;
+        sfx.playClick();
+        refresh();
+      });
+    });
+  };
+
+  // Under the preview: what the tried-on item, outfit or house costs, or how many stars are still missing
   const renderAction = () => {
     const mount = modalContainer.querySelector('#shop-action');
     if (!tryOn) {
-      mount.innerHTML = '<p class="text-center text-xs font-bold text-slate-500 py-2">לחצו על פריט כדי למדוד אותו 👇</p>';
+      mount.innerHTML = `<p class="text-center text-xs font-bold text-slate-500 py-2">${mode === 'house' ? 'לחצו על פריט כדי לראות אותו בבית 👇' : 'לחצו על פריט כדי למדוד אותו 👇'}</p>`;
       return;
     }
-    const items = tryOn.ids.map(shopItem);
+    const items = tryOn.ids.map(lookup);
     const cost = priceOf(items);
     const missing = cost - storage.getStarBalance(profile);
     if (missing > 0) {
@@ -102,8 +159,13 @@ export function renderShopModal(modalContainer, onClosed) {
     }
     mount.innerHTML = `<button id="btn-buy-item" class="w-full btn-tactile bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-2 rounded-xl border-b-4 border-emerald-700 cursor-pointer">קונים ${tryOn.name} ב-${cost} ⭐</button>`;
     mount.querySelector('#btn-buy-item').addEventListener('click', () => {
-      if (!storage.buyItems(items)) return;
-      equipItems(items);
+      if (mode === 'house') {
+        if (!storage.buyHouseItems(items)) return;
+        placeHouseItems(items);
+      } else {
+        if (!storage.buyItems(items)) return;
+        equipItems(items);
+      }
       tryOn = null;
       sfx.playVictory();
       refresh();
@@ -111,7 +173,10 @@ export function renderShopModal(modalContainer, onClosed) {
   };
 
   const renderTabs = () => {
-    const tabs = [SETS_TAB, ...SHOP_SLOTS, { key: LOOK_TAB, label: 'המראה שלי', emoji: '🎨' }];
+    // Furniture tabs appear once the child owns a house
+    const tabs = mode === 'house'
+      ? [HOUSES_TAB, ...(storage.getHouse(profile).house ? HOUSE_SLOTS : [])]
+      : [SETS_TAB, ...SHOP_SLOTS, { key: LOOK_TAB, label: 'המראה שלי', emoji: '🎨' }];
     const mount = modalContainer.querySelector('#shop-tabs');
     mount.innerHTML = tabs.map(tab => `
       <button data-tab="${tab.key}" class="shop-tab px-2 py-1 rounded-xl border-2 font-bold text-xs cursor-pointer ${tab.key === activeTab ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}">
@@ -200,6 +265,55 @@ export function renderShopModal(modalContainer, onClosed) {
           equipItems(items);
         } else {
           tryOn = { name: `תלבושת ${set.name}`, ids: set.pieces };
+        }
+        refresh();
+      });
+    });
+  };
+
+  // Houses and furniture: the same tiles as clothes; moving to another owned house keeps the furniture
+  const renderHouseItems = () => {
+    const house = storage.getHouse(profile);
+    const items = houseItemsForSlot(activeTab);
+    const slot = HOUSE_SLOTS.find(s => s.key === activeTab);
+    const current = activeTab === HOUSES_TAB.key ? house.house : house.placed[activeTab];
+    const shown = tryOn ? tryOn.ids[0] : current;
+    const selectedId = shown || (slot && !slot.optional ? items.find(item => item.cost === 0)?.id : null) || null;
+
+    const noneTile = slot?.optional ? `
+      <button data-item="" class="shop-item rounded-2xl border-2 p-1.5 flex flex-col items-center cursor-pointer ${!selectedId ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white'}">
+        <span class="w-full aspect-square flex items-center justify-center text-3xl text-slate-300">✖</span>
+        <span class="text-[11px] font-bold text-slate-700 leading-tight">בלי</span>
+      </button>
+    ` : '';
+    const hint = house.house ? '' : `
+      <p class="col-span-3 sm:col-span-4 text-center text-sm font-bold text-indigo-800 bg-indigo-50 border-2 border-indigo-100 rounded-xl py-2">קודם קונים בית, ואז אפשר לרהט אותו 🛋️</p>
+    `;
+
+    const mount = modalContainer.querySelector('#shop-items');
+    mount.innerHTML = hint + noneTile + items.map(item => `
+      <button data-item="${item.id}" class="shop-item rounded-2xl border-2 p-1.5 flex flex-col items-center cursor-pointer ${item.id === selectedId ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'}">
+        <span class="w-full aspect-square block rounded-xl overflow-hidden bg-slate-50">${houseThumbSvg(item)}</span>
+        <span class="text-[11px] font-bold text-slate-700 leading-tight mt-1 text-center">${item.name}</span>
+        <span class="text-xs font-black ${isOwned(item) ? 'text-emerald-600' : 'text-amber-700'}">${isOwned(item) ? '✓ שלי' : `${item.cost} ⭐`}</span>
+      </button>
+    `).join('');
+
+    mount.querySelectorAll('.shop-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = houseItem(btn.dataset.item);
+        sfx.playClick();
+        if (item && !isOwned(item)) {
+          tryOn = { name: item.name, ids: [item.id] };
+        } else {
+          tryOn = null;
+          if (item) {
+            placeHouseItems([item]);
+          } else {
+            const placed = { ...storage.getHouse(profile).placed };
+            delete placed[activeTab];
+            storage.updateHouse({ placed });
+          }
         }
         refresh();
       });

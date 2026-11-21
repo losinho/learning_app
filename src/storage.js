@@ -195,6 +195,32 @@ class StorageService {
     return true;
   }
 
+  // The child's house: which houses and furniture they own, the house they live in and what stands in each room slot
+  getHouse(profile = this.getActiveProfile()) {
+    return { owned: [], house: null, placed: {}, ...profile?.house };
+  }
+
+  updateHouse(changes) {
+    const profile = this.getActiveProfile();
+    if (!profile) return null;
+    profile.house = { ...this.getHouse(profile), ...changes };
+    this.save();
+    return profile.house;
+  }
+
+  // Same rules as buyItems, for houses and furniture
+  buyHouseItems(items) {
+    const profile = this.getActiveProfile();
+    if (!profile) return false;
+    const { owned } = this.getHouse(profile);
+    const toBuy = items.filter(item => item.cost > 0 && !owned.includes(item.id));
+    const total = toBuy.reduce((sum, item) => sum + item.cost, 0);
+    if (this.getStarBalance(profile) < total) return false;
+    profile.spentStars = (profile.spentStars || 0) + total;
+    this.updateHouse({ owned: [...owned, ...toBuy.map(item => item.id)] });
+    return true;
+  }
+
   // Keeps the last 10 challenge results per subject; used by the automatic challenge level
   recordChallengeResult(subject, isCorrect) {
     const profile = this.getActiveProfile();
